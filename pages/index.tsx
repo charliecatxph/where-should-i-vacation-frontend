@@ -537,7 +537,7 @@ export default function Home({ user, api }: any) {
                   </div>
                   <button
                     type="submit"
-                    className="w-full max-[900px]:h-[40px]  bg-orange-600 text-white font-[600] px-5 rounded-full text-[15px] mx-auto"
+                    className="max-[900px]:w-full max-[900px]:h-[40px]  bg-orange-600 text-white font-[600] px-5 rounded-full text-[15px] mx-auto"
                   >
                     Go
                   </button>
