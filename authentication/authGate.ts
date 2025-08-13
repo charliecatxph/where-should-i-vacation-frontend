@@ -15,6 +15,7 @@ const protectedRoutes = [
 const stripe = ["/purchase-success"];
 
 export const authGate = async (ctx: GetServerSidePropsContext) => {
+  console.log(ctx.req.headers);
   const cookie = parse(ctx.req.headers.cookie || "")?.refreshToken || "";
   const { query } = ctx;
   const server = process.env.SERVER;
