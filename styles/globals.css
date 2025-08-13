@@ -1,0 +1,69 @@
+@import "tailwindcss";
+
+.ctx-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.ctx-container-itinerary {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.wrapper {
+  width: 100%;
+}
+
+button:hover {
+  cursor: pointer;
+}
+
+
+.loading-skeleton {
+  position: relative;
+  background: oklch(96.7% 0.003 264.542);
+  overflow: hidden;
+}
+
+.loading-skeleton::after {
+
+  position: absolute;
+  top: 0; 
+  left:0;
+  height: 100%;
+  width: 100px;
+  background: linear-gradient(
+  to right,
+  oklch(96.7% 0.003 264.542) 0%,
+  oklch(92.8% 0.006 264.531) 50%,
+  oklch(96.7% 0.003 264.542) 100%
+);
+animation: 2s skeleton ease-in-out infinite;
+  content: ""
+}
+
+@keyframes skeleton {
+  0% {
+    left: -50%;
+  }
+  100% {
+    left: 150%;
+  }
+}
+
+.first-hotel-swiper {
+  margin-left: max(calc((100vw - 1400px) / 2), 0px);
+  /* margin-right: calc((100vw - 600px) / 2) */
+}
+
+main {
+  min-height: 100vh;
+  height: 100%;
+}
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
