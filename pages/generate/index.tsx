@@ -218,9 +218,9 @@ export default function Generate({ user, queries, api }: any) {
   }, [travelRecommendations?.interpretation]);
 
   const navButtons = [
-    { name: "Add Credits", route: "/credits" },
-
-    { name: "Contact", route: "/#contact" },
+    { name: "Add Credits", route: "/#pricing" },
+    { name: "Itinerary Builder", route: "/itinerary-builder" },
+    { name: "Generation History", route: "/history" },
   ];
 
   return (

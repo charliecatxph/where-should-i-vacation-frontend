@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function ItineraryAd() {
   return (
     <>
@@ -5,7 +7,7 @@ export default function ItineraryAd() {
         <div className="ctx-container">
           <div className="wrapper mt-25 flex px-5  max-[700px]:flex-col-reverse max-[700px]:gap-20">
             <div className="basis-1/2">
-              <h1 className="text-4xl font-[800] mb-2 tracking-tight text-orange-600">
+              <h1 className="text-4xl font-[800] mb-2 tracking-tight text-orange-600 max-[800px]:text-2xl">
                 Everything’s Better with Itineraries
               </h1>
               <p className="text-gray-700 mb-1">
@@ -34,9 +36,11 @@ export default function ItineraryAd() {
                 <span className="font-bold text-orange-600">you</span>. All you
                 have to do is show up.
               </p>
-              <button className="mt-6 bg-orange-600 hover:bg-orange-500  text-white py-2 px-8 rounded-lg shadow transition-colors duration-200">
-                <span className="font-[700]">Create An Itinerary</span>
-              </button>
+              <Link href="/itinerary-builder">
+                <button className="mt-6 bg-orange-600 hover:bg-orange-500  text-white py-2 px-8 rounded-lg shadow transition-colors duration-200">
+                  <span className="font-[700]">Create An Itinerary</span>
+                </button>
+              </Link>
             </div>
             <div className="basis-1/2">
               <div className="flex justify-center items-center h-full relative">

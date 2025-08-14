@@ -108,7 +108,6 @@ export default function GenerateItinerary({ user, queries, api }: any) {
     { name: "Ordinary Generation", route: "/" },
     { name: "Itinerary Builder", route: "/itinerary-builder" },
     { name: "Itinerary History", route: "/itinerary-history" },
-    { name: "Contact", route: "/#contact" },
   ];
 
   const {

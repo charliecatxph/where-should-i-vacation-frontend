@@ -78,16 +78,16 @@ export default function HotelSwiper({
           <>
             <div className="ctx-container">
               <div className="wrapper px-5">
-                <h1 className="text-3xl font-[800] text-center mt-10 max-[800px]:text-2xl">
+                <h1 className="text-3xl font-[800] text-center mt-10 max-[800px]:text-2xl  max-[400px]:text-xl">
                   Accomodation
                 </h1>
-                <p className="text-center font-[500] text-neutral-700 mt-1">
+                <p className="text-center font-[500] text-neutral-700 mt-1  max-[400px]:text-[0.9rem]">
                   Here are some hotels near to {placeData?.displayName?.text},
                   arranged by price.
                 </p>
               </div>
             </div>
-            <div className="flex justify-center text-sm font-[500] mt-5">
+            <div className="flex justify-center text-sm font-[500] mt-5 px-5">
               <div className="flex align-center gap-2 bg-yellow-100 text-yellow-700 py-1.5 px-5 rounded-full max-[800px]:text-xs">
                 <TriangleAlert size="18px" />
                 <span>

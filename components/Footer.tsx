@@ -13,7 +13,7 @@ export default function Footer() {
             {/* Left: Logo and description */}
             <div className="flex flex-col gap-3 items-start">
               <img src="wta.svg" alt="" className="saturate-0 w-[200px]" />
-              <p className="text-sm max-w-xs mt-2">
+              <p className="text-sm max-w-xs mt-2 max-[800px]:text-xs">
                 AI-powered travel planning, personalized for every journey.
                 Discover, plan, and explore with confidence.
               </p>
@@ -35,13 +35,12 @@ export default function Footer() {
         {/* Attribution section */}
         <div className="ctx-container mt-6 border-t border-neutral-200 pt-4 text-xs text-neutral-500 flex flex-col justify-between items-center gap-2">
           <div className="wrapper flex justify-between items-center">
-            <span>
+            <span className=" max-[800px]:text-xs">
               &copy; {new Date().getFullYear()} Where Should I Vacation. All
               rights reserved.
             </span>
-            <span className="text-right">
-              Illustrations & images from Unsplash, OpenAI, and partners. Logo,
-              and app developed by CTX Softwares Philippines.
+            <span className="text-right max-[800px]:text-xs">
+              Developed by CTX Softwares Philippines.
             </span>
           </div>
           <div className="wrapper flex saturate-0 items-center gap-3 mt-10">

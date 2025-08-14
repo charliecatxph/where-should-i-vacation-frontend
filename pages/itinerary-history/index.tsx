@@ -142,9 +142,8 @@ export default function History({ user, api }: any) {
   });
 
   const navButtons = [
-    { name: "Generate", route: "/" },
-    { name: "Itinerary Builder", route: "/itinerary-builder" },
-    { name: "Contact", route: "/contact" },
+    { name: "Ordinary Generation", route: "/" },
+    { name: "Generation History", route: "/history" },
   ];
 
   return (

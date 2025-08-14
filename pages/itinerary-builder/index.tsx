@@ -59,10 +59,10 @@ export default function ItineraryBuilder({ user, api }: any) {
   }, [user]);
 
   const navButtons = [
-    { name: "Ordinary Generation", route: "/" },
-    { name: "How It Works", route: "/itinerary" },
+    { name: "Ordinary Generation", route: "/#generate" },
+    { name: "Generation History", route: "/history" },
     { name: "Itinerary History", route: "/itinerary-history" },
-    { name: "Contact", route: "/#contact" },
+    { name: "Pricing", route: "/#pricing" },
   ];
 
   // Animation state for header
@@ -675,7 +675,7 @@ export default function ItineraryBuilder({ user, api }: any) {
             </div>
           </div>
         </section>
-        <section className="itinerary-expl mt-40 max-[800px]:mt-[600px]">
+        <section className="itinerary-expl mt-40 max-[800px]:mt-[600px] mb-[200px]">
           <div className="ctx-container">
             <div className="wrapper px-5">
               <h1 className="text-3xl font-[800] text-center mt-20 max-[600px]:text-2xl">

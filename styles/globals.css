@@ -54,7 +54,7 @@ animation: 2s skeleton ease-in-out infinite;
 }
 
 .first-hotel-swiper {
-  margin-left: max(calc((100vw - 1400px) / 2), 0px);
+  margin-left: max(calc((100vw - 1200px) / 2), 0px);
   /* margin-right: calc((100vw - 600px) / 2) */
 }
 

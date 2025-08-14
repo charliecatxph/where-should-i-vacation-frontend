@@ -182,7 +182,7 @@ export default function HotelCard({
         delay: i * 0.2,
         ease: "easeOut",
       }}
-      className="snap-start relative h-[400px] w-[500px] shrink-0 overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300"
+      className="snap-center  relative h-[400px] w-[500px] max-[800px]:w-full shrink-0 overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300"
     >
       <img
         src={hotel.photos?.[0]?.secure_url ?? ""}
@@ -217,8 +217,7 @@ export default function HotelCard({
 
         <div className="flex justify-between items-center relative">
           <div className="flex items-center gap-2 mb-4 text-sm opacity-75 basis-1/2">
-            <span>📍</span>
-            <span>{hotel.formattedAddress}</span>
+            <span>📍 {hotel.formattedAddress.slice(0, 60)}</span>
           </div>
           <button
             ref={(el) => {

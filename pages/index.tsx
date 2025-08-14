@@ -225,10 +225,10 @@ export default function Home({ user, api }: any) {
   };
 
   const navButtons = [
-    { name: "How It Works", route: "/#how-it-works" },
+    { name: "Ordinary Generation", route: "/#generation" },
     { name: "Itinerary Builder", route: "/itinerary-builder" },
     { name: "Pricing", route: "/#pricing" },
-    { name: "Contact", route: "/#contact" },
+    { name: "FAQ", route: "/#faq" },
   ];
 
   return (
@@ -345,7 +345,7 @@ export default function Home({ user, api }: any) {
             }}
           />
           <div className="ctx-container">
-            <div className="wrapper">
+            <div className="wrapper" id="generation">
               <div className="middle pt-[200px] max-[600px]:pt-[150px]">
                 <h1
                   className={`text-center font-[700] text-5xl tracking-tight ${geist.className} max-[1200px]:max-w-[60%] mx-auto max-[600px]:text-4xl max-[600px]:max-w-full`}
@@ -786,7 +786,7 @@ export default function Home({ user, api }: any) {
             </div>
           </div>
         </section>
-        <section className="pricing">
+        <section className="pricing" id="pricing">
           <div className="ctx-container">
             <div className="wrapper mt-[100px] px-5">
               <h1 className="text-3xl font-[700] text-center max-[600px]:text-2xl">
@@ -958,9 +958,11 @@ export default function Home({ user, api }: any) {
               <h1 className="font-[700] text-3xl text-center mt-10">
                 Ready, Set, Explore!
               </h1>
-              <button className="bg-orange-600 hover:bg-orange-500 shadow-sm shadow-neutral-100 px-8 py-2 text-white rounded-md mx-auto font-[600] block mt-5">
-                Let's Explore
-              </button>
+              <Link href="#generate">
+                <button className="bg-orange-600 hover:bg-orange-500 shadow-sm shadow-neutral-100 px-8 py-2 text-white rounded-md mx-auto font-[600] block mt-5">
+                  Let's Explore
+                </button>
+              </Link>
             </div>
           </div>
         </section>
@@ -1026,7 +1028,7 @@ function FAQAccordion() {
 
   // Render
   return (
-    <div className="mx-auto mt-20 px-5">
+    <div className="mx-auto mt-20 px-5" id="faq">
       <h1 className="text-3xl font-bold text-center max-[600px]:text-2xl">
         Frequently Asked Questions
       </h1>
@@ -1049,7 +1051,7 @@ function FAQAccordion() {
               type="button"
               style={{ background: "none", border: "none", outline: "none" }}
             >
-              <span className="text-lg">{faq.q}</span>
+              <span className="text-lg max-[800px]:text-base">{faq.q}</span>
               <span
                 className={`ml-4 transition-transform duration-200 ${
                   openIndices.includes(idx)
@@ -1086,7 +1088,7 @@ function FAQAccordion() {
                   transition={{ duration: 0.32, ease: "easeInOut" }}
                   style={{ overflow: "hidden" }}
                 >
-                  <div className="pl-0 pr-8 pb-4 pt-1 text-neutral-700">
+                  <div className="pl-0 pr-8 pb-4 pt-1 text-neutral-700 max-[800px]:text-sm">
                     {faq.a}
                   </div>
                 </motion.div>

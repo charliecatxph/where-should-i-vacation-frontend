@@ -3,6 +3,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Pagination } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/pagination";
+import Link from "next/link";
 
 interface PlaceCardProps {
   id: string;
@@ -75,14 +76,12 @@ export const PlaceCard: FC<PlaceCardProps> = ({
           >
             View this Place
           </a>
-          <a
+          <Link
             href={`/vacation?id=${id}`}
-            target="_blank"
-            rel="noopener noreferrer"
             className="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 px-2 rounded-md text-center text-sm transition"
           >
             Explore
-          </a>
+          </Link>
         </div>
       </div>
     </div>

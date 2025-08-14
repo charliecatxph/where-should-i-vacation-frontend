@@ -59,7 +59,7 @@ export default function PlaceShowcase({ placeData }: PlaceShowcaseParameters) {
                   </div>
                 )}
                 <p
-                  className={`${inter.className} text-white/90 text-lg md:text-xl drop-shadow-md`}
+                  className={`${inter.className} text-white/90 text-lg md:text-xl max-[500px]:text-[1rem] drop-shadow-md`}
                 >
                   {placeData.formattedAddress || "Location"}
                 </p>
@@ -74,7 +74,7 @@ export default function PlaceShowcase({ placeData }: PlaceShowcaseParameters) {
             {/* Description */}
             {placeData?.description && (
               <div className=" rounded-lg p-4">
-                <h1 className="text-3xl font-[800] text-center mt-5 max-[800px]:text-2xl">
+                <h1 className="text-3xl font-[800] text-center mt-5 max-[800px]:text-2xl max-[400px]:text-xl">
                   About {placeData?.displayName?.text}
                 </h1>
                 <p className="text-neutral-700 text-base text-center mt-2">
@@ -84,11 +84,11 @@ export default function PlaceShowcase({ placeData }: PlaceShowcaseParameters) {
             )}
           </div>
           {placeData && placeData.photos && placeData.photos.length > 0 && (
-            <div className="flex items-baseline gap-2 px-5">
+            <div className="flex items-baseline gap-2 px-5 max-[400px]:grid grid-cols-1">
               {placeData.photos.map((img: any, idx: number) => (
                 <div
                   key={idx}
-                  className="rounded-lg w-[300px] overflow-hidden shadow-sm shadow-neutral-100"
+                  className="rounded-lg w-[300px] max-[400px]:w-full overflow-hidden shadow-sm shadow-neutral-100"
                   style={{
                     aspectRatio: "16/9",
                   }}

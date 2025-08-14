@@ -198,8 +198,7 @@ export default function Vacation({ user, queries, api }: any) {
 
   const navButtons = [
     { name: "Ordinary Generation", route: "/" },
-    { name: "Itinerary Builder", route: "/itinerary" },
-    { name: "Contact", route: "/#contact" },
+    { name: "Itinerary Builder", route: "/itinerary-builder" },
   ];
 
   return (
