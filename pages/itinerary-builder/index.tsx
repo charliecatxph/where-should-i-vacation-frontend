@@ -344,7 +344,11 @@ export default function ItineraryBuilder({ user, api }: any) {
               zIndex: 10000,
             }}
           >
-            <Header userData__final={userData__final} navButtons={navButtons} />
+            <Header
+              userData__final={userData__final}
+              navButtons={navButtons}
+              api={api}
+            />
           </motion.div>
         )}
       </AnimatePresence>

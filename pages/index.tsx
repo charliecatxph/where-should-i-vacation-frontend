@@ -234,7 +234,11 @@ export default function Home({ user, api }: any) {
   return (
     <>
       <main className={`${inter.className}`}>
-        <Header userData__final={userData__final} navButtons={navButtons} />
+        <Header
+          userData__final={userData__final}
+          navButtons={navButtons}
+          api={api}
+        />
         <section className="min-h-[600px] relative overflow-x-clip px-5  py-10">
           <div
             className="z-[-1] absolute left-0 top-10 pointer-events-none select-none flex flex-col gap-6 max-[1300px]:left-[-150] max-[600px]:hidden"

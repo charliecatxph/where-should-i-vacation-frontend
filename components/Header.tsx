@@ -26,11 +26,13 @@ interface NavButton {
 interface HeaderProps {
   userData__final: any;
   navButtons: NavButton[];
+  api: string;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   userData__final,
   navButtons,
+  api,
 }) => {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -45,11 +47,9 @@ export const Header: React.FC<HeaderProps> = ({
       await queryClient.fetchQuery({
         queryKey: ["logout"],
         queryFn: async () => {
-          const res = await axios.post(
-            "http://localhost:8080/api/logout",
-            null,
-            { withCredentials: true }
-          );
+          const res = await axios.post(`${api}/logout`, null, {
+            withCredentials: true,
+          });
           return res.data;
         },
         staleTime: 0,

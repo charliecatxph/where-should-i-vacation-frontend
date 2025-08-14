@@ -205,7 +205,11 @@ export default function Vacation({ user, queries, api }: any) {
   return (
     <>
       <main className={`${inter.className} relative`}>
-        <Header userData__final={userData__final} navButtons={navButtons} />
+        <Header
+          userData__final={userData__final}
+          navButtons={navButtons}
+          api={api}
+        />
         <AnimatePresence>
           {placeLoading ? (
             <PlaceLoadingSpinner />

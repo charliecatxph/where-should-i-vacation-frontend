@@ -150,7 +150,11 @@ export default function History({ user, api }: any) {
   return (
     <>
       <main className={`${inter.className} relative`}>
-        <Header userData__final={userData__final} navButtons={navButtons} />
+        <Header
+          userData__final={userData__final}
+          navButtons={navButtons}
+          api={api}
+        />
         <section className="history">
           <div className="ctx-container">
             <div className="wrapper">

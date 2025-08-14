@@ -254,7 +254,11 @@ export default function GenerateItinerary({ user, queries, api }: any) {
   return (
     <>
       <main>
-        <Header userData__final={userData__final} navButtons={navButtons} />
+        <Header
+          userData__final={userData__final}
+          navButtons={navButtons}
+          api={api}
+        />
         <section className="py-6">
           <div className="ctx-container">
             <div className="wrapper px-5">

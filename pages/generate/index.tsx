@@ -118,7 +118,7 @@ export default function Generate({ user, queries, api }: any) {
           `${api}/get-travel-recommendations?${params.toString()}`,
           {
             headers: {
-              Authorization: `Bearer ${user.token}1`,
+              Authorization: `Bearer ${user.token}`,
             },
             withCredentials: true,
             timeout: 120000,
@@ -226,7 +226,11 @@ export default function Generate({ user, queries, api }: any) {
   return (
     <>
       <main className={`${inter.className} relative`}>
-        <Header userData__final={userData__final} navButtons={navButtons} />
+        <Header
+          userData__final={userData__final}
+          navButtons={navButtons}
+          api={api}
+        />
         <section>
           <div className="ctx-container">
             <div className="wrapper px-5">
