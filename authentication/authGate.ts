@@ -24,6 +24,7 @@ export const authGate = async (ctx: GetServerSidePropsContext) => {
   const resolvedUrl = ctx.resolvedUrl.split("?")[0];
 
   try {
+    console.log("INIT");
     const res = await axios.post(
       `${absoluteServerUrl}/api/user-rehydration`,
       {},
@@ -33,6 +34,7 @@ export const authGate = async (ctx: GetServerSidePropsContext) => {
         },
       }
     );
+    console.log("AUTH OK");
 
     const userData = {
       ...(jwt.decode(res.data.token) as object),
@@ -83,6 +85,7 @@ export const authGate = async (ctx: GetServerSidePropsContext) => {
       },
     };
   } catch (e) {
+    console.log("ERROR IN AUTHENTICATION", e);
     if (protectedRoutes.some((route) => route === resolvedUrl)) {
       return {
         redirect: {
