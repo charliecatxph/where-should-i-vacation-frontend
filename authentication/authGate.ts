@@ -26,7 +26,7 @@ export const authGate = async (ctx: GetServerSidePropsContext) => {
   try {
     console.log("INIT");
     const res = await axios.post(
-      `${absoluteServerUrl}/api/user-rehydration`,
+      `${absoluteServerUrl}/user-rehydration`,
       {},
       {
         headers: {
