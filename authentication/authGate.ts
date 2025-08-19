@@ -15,7 +15,6 @@ const protectedRoutes = [
 const stripe = ["/purchase-success"];
 
 export const authGate = async (ctx: GetServerSidePropsContext) => {
-  console.log(ctx.req.headers);
   const cookie = parse(ctx.req.headers.cookie || "")?.refreshToken || "";
   const { query } = ctx;
   const server = process.env.SERVER;
@@ -24,7 +23,6 @@ export const authGate = async (ctx: GetServerSidePropsContext) => {
   const resolvedUrl = ctx.resolvedUrl.split("?")[0];
 
   try {
-    console.log("BEGIN AUTH");
     const res = await axios.post(
       `${absoluteServerUrl}/api/user-rehydration`,
       {},
@@ -34,7 +32,6 @@ export const authGate = async (ctx: GetServerSidePropsContext) => {
         },
       }
     );
-    console.log("AUTH COMPLETE");
 
     const userData = {
       ...(jwt.decode(res.data.token) as object),
@@ -85,7 +82,6 @@ export const authGate = async (ctx: GetServerSidePropsContext) => {
       },
     };
   } catch (e) {
-    console.log(e);
     if (protectedRoutes.some((route) => route === resolvedUrl)) {
       return {
         redirect: {

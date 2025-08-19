@@ -7,6 +7,10 @@ import {
   X,
   ChevronDown,
   Settings,
+  Send,
+  CalendarRange,
+  Search,
+  Sparkle,
 } from "lucide-react";
 import { Geist, Inter, Raleway } from "next/font/google";
 import { motion, AnimatePresence } from "framer-motion";
@@ -15,6 +19,7 @@ import { DatePicker } from "@mantine/dates";
 import { GetServerSidePropsContext } from "next";
 const inter = Inter({ subsets: ["latin"] });
 const geist = Geist({ subsets: ["latin"] });
+const raleway = Raleway({ subsets: ["latin"] });
 import { useDispatch, useSelector } from "react-redux";
 import {
   isUserDataComplete,
@@ -32,6 +37,12 @@ import { useClickOutside } from "@/hooks/UseClickOutside";
 import Link from "next/link";
 import { Header } from "@/components/Header";
 import Footer from "@/components/Footer";
+import Head from "next/head";
+import ScrollReveal from "@/components/animatronix/ScrollReveal";
+import MagicBento from "@/components/animatronix/MagicBento";
+import TextType from "@/components/animatronix/TextType";
+import { CircularProgress } from "@mui/material";
+import ItineraryShowcase from "@/components/ItineraryShowcase";
 
 export type DateRangeType = [Date | string | null, Date | string | null];
 export type FormState = {
@@ -233,367 +244,454 @@ export default function Home({ user, api }: any) {
 
   return (
     <>
+      <Head>
+        <title>
+          Where Should I Vacation - Discover. Plan. Go. — All with AI ✨
+        </title>
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
       <main className={`${inter.className}`}>
         <Header
           userData__final={userData__final}
           navButtons={navButtons}
           api={api}
         />
-        <section className="min-h-[600px] relative overflow-x-clip px-5  py-10">
-          <div
-            className="z-[-1] absolute left-0 top-10 pointer-events-none select-none flex flex-col gap-6 max-[1300px]:left-[-150] max-[600px]:hidden"
-            style={{ width: "260px" }}
-          >
-            {[
-              {
-                src: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80",
-                alt: "Beach Vacation",
-                extra: "ml-0",
-              },
-              {
-                src: "https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=600&q=80",
-                alt: "City Adventure",
-                extra: "ml-8",
-              },
-              {
-                src: "https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=600&q=80",
-                alt: "Desert",
-                extra: "-ml-4",
-              },
-              {
-                src: "https://images.unsplash.com/photo-1465156799763-2c087c332922?auto=format&fit=crop&w=600&q=80",
-                alt: "Forest",
-                extra: "ml-10",
-              },
-            ].map((img, i) => (
-              <motion.div
-                key={img.src}
-                initial={{ opacity: 0, x: -80 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.8, ease: "circOut", delay: 0.18 * i }}
-                className={`rounded-xl shadow-lg border-4 border-white overflow-hidden aspect-[16/9] w-full ${img.extra}`}
-                style={{ minWidth: "180px", maxWidth: "240px" }}
+        <section className="relative h-screen max-h-[800px] mt-5">
+          <div className="bg  h-full w-full px-5 absolute z-[-1]">
+            <div className="rounded-2xl overflow-hidden h-full relative z-[-1]">
+              <video
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="w-full h-full object-cover"
               >
-                <img
-                  src={img.src}
-                  alt={img.alt}
-                  className="object-cover w-full h-full"
-                  style={{ aspectRatio: "16/9" }}
-                />
-              </motion.div>
-            ))}
+                <source src="herovid.mp4"></source>
+              </video>
+              {/* Black overlay with opacity, ensure it covers the video */}
+              <div className="pointer-events-none absolute inset-0 bg-black/50 z-10" />
+            </div>
           </div>
-          {/* Right collage */}
-          <div
-            className="z-[-1] absolute right-0 top-10 pointer-events-none select-none flex flex-col gap-6 items-end max-[1300px]:right-[-150] max-[600px]:hidden"
-            style={{ width: "260px" }}
-          >
-            {[
-              {
-                src: "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=600&q=80",
-                alt: "Mountain Retreat",
-                extra: "mr-0",
-              },
-              {
-                src: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80",
-                alt: "Vacation Fun",
-                extra: "mr-8",
-              },
-              {
-                src: "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?auto=format&fit=crop&w=600&q=80",
-                alt: "Road Trip",
-                extra: "-mr-4",
-              },
-              {
-                src: "https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=600&q=80",
-                alt: "Safari",
-                extra: "mr-10",
-              },
-            ].map((img, i) => (
-              <motion.div
-                key={img.src}
-                initial={{ opacity: 0, x: 80 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{
-                  duration: 0.8,
-                  ease: "circOut",
-                  delay: 0.18 * i + 0.2,
-                }}
-                className={`rounded-xl shadow-lg border-4 border-white overflow-hidden aspect-[16/9] w-full ${img.extra}`}
-                style={{ minWidth: "180px", maxWidth: "240px" }}
-              >
-                <img
-                  src={img.src}
-                  alt={img.alt}
-                  className="object-cover w-full h-full"
-                  style={{ aspectRatio: "16/9" }}
-                />
-              </motion.div>
-            ))}
-          </div>
-          {/* Decorative radial gradient, centered behind hero headline only */}
-          <div
-            aria-hidden="true"
-            className="absolute left-1/2 top-[260px] -translate-x-1/2 -translate-y-1/2 z-[-1] pointer-events-none select-none"
-            style={{
-              width: "700px",
-              height: "380px",
-              background:
-                "radial-gradient(ellipse 60% 50% at 50% 50%, rgba(255,99,233,0.55) 0%, rgba(255,204,0,0.35) 40%, rgba(0,191,255,0.25) 70%, transparent 100%)",
-              filter: "blur(36px)",
-              opacity: 0.3,
-            }}
-          />
-          <div className="ctx-container">
-            <div className="wrapper" id="generation">
-              <div className="middle pt-[200px] max-[600px]:pt-[150px]">
+          <div className="main-hero px-5 text-white">
+            <div className="ctx-container-vxt2">
+              <div className="wrapper pt-[250px]">
                 <h1
-                  className={`text-center font-[700] text-5xl tracking-tight ${geist.className} max-[1200px]:max-w-[60%] mx-auto max-[600px]:text-4xl max-[600px]:max-w-full`}
+                  className={`text-[4rem] font-[700] ${geist.className} leading-[70px] max-w-[70%]`}
                 >
                   Discover. Plan. Go. — All with AI ✨
                 </h1>
-                <p className="text-center mt-2 font-[400] text-lg text-neutral-800 max-[1300px]:max-w-2/3  mx-auto max-[600px]:max-w-full max-[600px]:text-base">
-                  Let our AI be your smart travel buddy — from finding hidden
-                  gems to crafting your perfect itinerary in seconds.
-                </p>
-                <form
-                  onSubmit={handleFormSubmit}
-                  className="border-1 border-neutral-200 p-5 flex gap-2 mt-5 bg-white rounded-xl max-[900px]:flex-col"
+                <p
+                  className={`${geist.className} max-w-[50%] mt-5 font-[500] text-neutral-100`}
                 >
-                  <div className="input-box relative border-1 rounded-md border-neutral-200 py-1 w-full">
-                    <div className="icon absolute h-[40px] w-[40px] grid place-items-center top-0.5">
-                      <CircleQuestionMark strokeWidth={1.5} />
-                    </div>
-                    <div className="ml-[50px] flex flex-col">
-                      <span className="font-[600] text-xs">Activity</span>
-                      <input
-                        type="text"
-                        className="focus:outline-0 outline-0 text-sm"
-                        placeholder="What do you want to do?"
-                        value={form.activity}
-                        onChange={handleActivityChange}
-                      />
-                      {form.errors.activity && (
-                        <span className="text-xs text-red-600 mt-1">
-                          {form.errors.activity}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="input-box relative border-1 rounded-md border-neutral-200 py-1 w-full">
-                    <div className="icon absolute h-[40px] w-[40px] grid place-items-center  top-0.5">
-                      <MapPin strokeWidth={1.5} />
-                    </div>
-                    <div className="ml-[50px] flex flex-col relative">
-                      <span className="font-[600] text-xs">Location</span>
-                      <input
-                        type="text"
-                        className="focus:outline-0 outline-0 text-sm"
-                        placeholder="Where do you want to go?"
-                        value={form.location}
-                        onChange={handleLocationChange}
-                        onFocus={() => setLocationInputFocused(true)}
-                        onBlur={() =>
-                          setTimeout(() => setLocationInputFocused(false), 200)
-                        }
-                      />
-                      {form.errors.location && (
-                        <span className="text-xs text-red-600 mt-1">
-                          {form.errors.location}
-                        </span>
-                      )}
-                      {locationInputFocused && (
-                        <div className="absolute top-full w-full  bg-white z-[3] rounded-b-2xl border-1 border-neutral-100 shadow-sm shadow-neutral-100">
-                          <ul>
-                            {locationData.loading ? (
-                              <li className="py-3 px-6 text-sm font-[500] text-center select-none">
-                                <svg
-                                  className="animate-spin mx-auto"
-                                  width="24"
-                                  height="24"
-                                  viewBox="0 0 24 24"
-                                  fill="none"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                >
-                                  <circle
-                                    className="opacity-25"
-                                    cx="12"
-                                    cy="12"
-                                    r="10"
-                                    stroke="currentColor"
-                                    strokeWidth="4"
-                                  />
-                                  <path
-                                    className="opacity-75"
-                                    fill="currentColor"
-                                    d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                                  />
-                                </svg>
-                              </li>
-                            ) : locationData.error ? (
-                              <li className="py-3 px-6 text-sm font-[500] text-center select-none text-red-600">
-                                Error loading locations
-                              </li>
-                            ) : locationData.results &&
-                              locationData.results.length > 0 ? (
-                              locationData.results
-                                .slice(0, 5)
-                                .map((loc: string, idx: number) => (
-                                  <li
-                                    key={loc + idx}
-                                    className="py-3 px-6 font-[500] hover:bg-neutral-50 border-b-1 border-neutral-100 text-sm"
-                                  >
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        setForm((prev) => ({
-                                          ...prev,
-                                          location: loc,
-                                        }));
-                                        setLocationInputFocused(false);
-                                      }}
-                                    >
-                                      <span className="text-left">{loc}</span>
-                                    </button>
-                                  </li>
-                                ))
-                            ) : !locationData.loading &&
-                              locationData.results.length === 0 &&
-                              debouncedLocation.trim() ? (
-                              <li className="py-3 px-6 text-sm font-[500] text-center select-none">
-                                No locations match your search.
-                              </li>
-                            ) : null}
-                          </ul>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <div className="input-box relative border-1 rounded-md border-neutral-200 py-1 w-full">
-                    <div className="icon absolute h-[40px] w-[40px] grid place-items-center  top-0.5">
-                      <Calendar strokeWidth={1.5} />
-                    </div>
-                    <div className="ml-[50px] flex flex-col z-[1]">
-                      <span className="font-[600] text-xs">Date</span>
-                      <button
-                        type="button"
-                        className="current-value select-none w-full text-left"
-                        onClick={() =>
-                          setShowDatePicker((pv) => ({
-                            ...pv,
-                            active: !pv.active,
-                          }))
-                        }
-                      >
-                        <span
-                          className={`ctx-unselected ${
-                            !(form.dateRange[0] && form.dateRange[1]) &&
-                            "text-neutral-500"
-                          }`}
-                        >
-                          {form.dateRange[0]
-                            ? moment(getDateObj(form.dateRange[0])).format(
-                                "MMM D"
-                              )
-                            : "--"}{" "}
-                          /{" "}
-                          {form.dateRange[1]
-                            ? moment(getDateObj(form.dateRange[1])).format(
-                                "MMM D"
-                              )
-                            : "--"}
+                  Turn your travel dreams into reality with AI-powered planning.
+                  Discover hidden gems, design personalized itineraries, and
+                  organize every detail — from flights and stays to activities
+                  and dining. Whether it’s a quick getaway or a
+                  once-in-a-lifetime adventure, everything you need to plan and
+                  go is right at your fingertips.
+                </p>
+                <div className="mt-15">
+                  <ul className="flex items-center w-max text-black rounded-t-2xl overflow-hidden">
+                    <li>
+                      <button className="px-5 py-3 bg-white">
+                        <span className="font-[600] flex items-center gap-3">
+                          <Sparkle
+                            size="19"
+                            color="#a259f7"
+                            className="animate-pulse"
+                          />{" "}
+                          Smart Search
                         </span>
                       </button>
-                      <AnimatePresence>
-                        {showDatePicker.active && (
-                          <motion.div
-                            ref={datePickerRef}
-                            initial={{
-                              opacity: 0,
-                              y: -5,
-                            }}
-                            animate={{
-                              opacity: 1,
-                              y: 0,
-                            }}
-                            exit={{
-                              opacity: 0,
-                              y: -5,
-                            }}
-                            key={"date-picker-ref"}
-                            className="absolute z-[3] top-full bg-white p-5 rounded-b-2xl border-1 border-neutral-100 shadow-sm shadow-neutral-10"
-                          >
-                            <DatePicker
-                              type="range"
-                              minDate={new Date()}
-                              value={form.dateRange}
-                              onChange={handleDateChange}
-                            />
-                          </motion.div>
-                        )}
-                        {form.errors.date && (
-                          <span className="text-xs text-red-600 mt-1">
-                            {form.errors.date}
-                          </span>
-                        )}
-                      </AnimatePresence>
-                    </div>
-                  </div>
-                  <button
-                    type="submit"
-                    className="max-[900px]:w-full max-[900px]:h-[40px]  bg-orange-600 text-white font-[600] px-5 rounded-full text-[15px] mx-auto"
+                    </li>
+                    <li>
+                      <button className="px-5 py-3 bg-white/40 text-white">
+                        <span className="font-[600]">Itinerary Builder</span>
+                      </button>
+                    </li>
+                  </ul>
+                  <form
+                    onSubmit={handleFormSubmit}
+                    className={`${geist.className} inputs text-black  bg-white px-5 py-6 rounded-r-2xl rounded-bl-2xl flex gap-5 w-max`}
                   >
-                    Go
-                  </button>
-                </form>
-                <div className="x-powered-by flex gap-5 items-center justify-center text-xs font-[500] mt-10 opacity-80">
-                  <p>Powered by</p>
-                  <img
-                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/OpenAI_Logo.svg/512px-OpenAI_Logo.svg.png"
-                    alt=""
-                    className="max-w-[70px]"
-                  />
+                    <div>
+                      <div className="top flex gap-5">
+                        <div className="icon w-[30px]">
+                          <CircleQuestionMark className="mx-auto" />
+                        </div>
+                        <p className="font-[500]">Activity</p>
+                      </div>
+                      <div className="bottom flex gap-5">
+                        <div className="w-[30px]"></div>
+                        <div className="w-[300px]">
+                          <input
+                            type="text"
+                            placeholder="Enter your wanted activity on the place."
+                            className="w-full focus:outline-0 outline-0 text-sm"
+                            value={form.activity}
+                            onChange={handleActivityChange}
+                          />
+                          {form.errors.activity && (
+                            <span className="text-xs text-red-600 mt-1">
+                              {form.errors.activity}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="top flex gap-5">
+                        <div className="icon w-[30px]">
+                          <MapPin className="mx-auto" />
+                        </div>
+                        <p className="font-[500]">Location</p>
+                      </div>
+                      <div className="bottom flex gap-5 relative">
+                        <div className="w-[30px]"></div>
+                        <div className="w-[300px] relative">
+                          <input
+                            type="text"
+                            placeholder="Enter a place of interest, city, etc."
+                            className="w-full focus:outline-0 outline-0 text-sm"
+                            value={form.location}
+                            onChange={handleLocationChange}
+                            onFocus={() => setLocationInputFocused(true)}
+                            onBlur={() =>
+                              setTimeout(
+                                () => setLocationInputFocused(false),
+                                200
+                              )
+                            }
+                          />
+                          {form.errors.location && (
+                            <span className="text-xs text-red-600 mt-1">
+                              {form.errors.location}
+                            </span>
+                          )}
+                          {locationInputFocused && (
+                            <div className="absolute top-full w-full  bg-white z-[3] rounded-b-2xl border-1 border-neutral-100 shadow-sm shadow-neutral-100">
+                              <ul>
+                                {locationData.loading ? (
+                                  <li className="py-3 px-6 text-sm font-[500] text-center select-none">
+                                    <svg
+                                      className="animate-spin mx-auto"
+                                      width="24"
+                                      height="24"
+                                      viewBox="0 0 24 24"
+                                      fill="none"
+                                      xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                      <circle
+                                        className="opacity-25"
+                                        cx="12"
+                                        cy="12"
+                                        r="10"
+                                        stroke="currentColor"
+                                        strokeWidth="4"
+                                      />
+                                      <path
+                                        className="opacity-75"
+                                        fill="currentColor"
+                                        d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                                      />
+                                    </svg>
+                                  </li>
+                                ) : locationData.error ? (
+                                  <li className="py-3 px-6 text-sm font-[500] text-center select-none text-red-600">
+                                    Error loading locations
+                                  </li>
+                                ) : locationData.results &&
+                                  locationData.results.length > 0 ? (
+                                  locationData.results
+                                    .slice(0, 5)
+                                    .map((loc: string, idx: number) => (
+                                      <li
+                                        key={loc + idx}
+                                        className="py-3 px-6 font-[500] hover:bg-neutral-50 border-b-1 border-neutral-100 text-sm"
+                                      >
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setForm((prev) => ({
+                                              ...prev,
+                                              location: loc,
+                                            }));
+                                            setLocationInputFocused(false);
+                                          }}
+                                        >
+                                          <span className="text-left">
+                                            {loc}
+                                          </span>
+                                        </button>
+                                      </li>
+                                    ))
+                                ) : !locationData.loading &&
+                                  locationData.results.length === 0 &&
+                                  debouncedLocation.trim() ? (
+                                  <li className="py-3 px-6 text-sm font-[500] text-center select-none">
+                                    No locations match your search.
+                                  </li>
+                                ) : null}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex flex-col">
+                      <div className="flex gap-5 relative">
+                        <div>
+                          <div className="top flex gap-5">
+                            <div className="icon w-[30px]">
+                              <CalendarRange className="mx-auto" />
+                            </div>
+                            <p className="font-[500]">Check-in</p>
+                          </div>
+                          <div className="bottom flex gap-5">
+                            <div className="w-[30px]"></div>
+                            <button
+                              type="button"
+                              className="w-full h-full block"
+                              onClick={() =>
+                                setShowDatePicker((pv) => ({
+                                  ...pv,
+                                  active: !pv.active,
+                                }))
+                              }
+                            >
+                              <span
+                                className={`ctx-unselected   ${
+                                  !(form.dateRange[0] && form.dateRange[1]) &&
+                                  "text-neutral-500"
+                                }`}
+                              >
+                                {form.dateRange[0]
+                                  ? moment(
+                                      getDateObj(form.dateRange[0])
+                                    ).format("MMM D")
+                                  : "--"}{" "}
+                              </span>
+                            </button>
+                          </div>
+                        </div>
+                        <div>
+                          <div className="top flex gap-5">
+                            <div className="icon w-[30px]">
+                              <CalendarRange className="mx-auto" />
+                            </div>
+                            <p className="font-[500]">Check-out</p>
+                          </div>
+                          <div className="bottom flex gap-5">
+                            <div className="w-[30px]"></div>
+                            <button
+                              type="button"
+                              className="w-full h-full block"
+                              onClick={() =>
+                                setShowDatePicker((pv) => ({
+                                  ...pv,
+                                  active: !pv.active,
+                                }))
+                              }
+                            >
+                              <span
+                                className={`ctx-unselected   ${
+                                  !(form.dateRange[0] && form.dateRange[1]) &&
+                                  "text-neutral-500"
+                                }`}
+                              >
+                                {form.dateRange[1]
+                                  ? moment(
+                                      getDateObj(form.dateRange[1])
+                                    ).format("MMM D")
+                                  : "--"}
+                              </span>
+                            </button>
+                          </div>
+                        </div>
+
+                        <AnimatePresence>
+                          {showDatePicker.active && (
+                            <motion.div
+                              ref={datePickerRef}
+                              initial={{
+                                opacity: 0,
+                                y: -5,
+                              }}
+                              animate={{
+                                opacity: 1,
+                                y: 0,
+                              }}
+                              exit={{
+                                opacity: 0,
+                                y: -5,
+                              }}
+                              key={"date-picker-ref"}
+                              className="absolute z-[3] top-[145%] bg-white p-5 rounded-b-2xl border-1 border-neutral-100 shadow-sm shadow-neutral-10"
+                            >
+                              <DatePicker
+                                type="range"
+                                minDate={new Date()}
+                                value={form.dateRange}
+                                onChange={handleDateChange}
+                              />
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                      {form.errors.date && (
+                        <span className="ml-[50px] text-xs text-red-600 mt-1">
+                          {form.errors.date}
+                        </span>
+                      )}
+                    </div>
+
+                    <button
+                      type="submit"
+                      className="bg-orange-600 text-white flex gap-5 justify-center items-center px-5 rounded-full ml-10 hover:bg-orange-700 transition-colors"
+                    >
+                      <Search size="20" /> Search
+                    </button>
+                  </form>
                 </div>
               </div>
             </div>
           </div>
         </section>
-        <section className="how-it-works px-5">
-          <div className="ctx-container">
-            <div className="wrapper flex gap-5 bg-blue-900 rounded-lg overflow-hidden shadow-lg shadow-neutral-200 border-1 border-blue-600 h-[400px] max-[900px]:h-auto max-[900px]:flex-col">
-              <div className="basis-1/2 px-8 py-10">
-                <h1 className="text-3xl font-bold text-white max-[600px]:text-2xl">
-                  Meet Your New AI Travel Buddy
-                </h1>
-                <p className="text-[14px] mt-2 text-neutral-200 max-[600px]:text-[12px]">
-                  Planning a trip just got way easier. Let our smart AI do the
-                  heavy lifting—get fun ideas, cool places to visit, and awesome
-                  things to do, all picked just for you. It's like talking to a
-                  travel agency! Just with more personalization!
-                </p>
-                <ol className="list-decimal ml-6 text-white text-sm space-y-1 mt-3 max-[600px]:text-[12px]">
-                  <li>
-                    <span className="font-semibold">User entry:</span> You tell
-                    us what you want to do and where you want to go.
-                  </li>
-                  <li>
-                    <span className="font-semibold">Smart search:</span> We
-                    gather the latest data from our travel partners and consider
-                    your previous trips.
-                  </li>
-                  <li>
-                    <span className="font-semibold">Personalized results:</span>{" "}
-                    We show you the best places and activities, tailored just
-                    for you.
-                  </li>
-                </ol>
-              </div>
-              <div className="basis-1/2 bg-white h-full flex-1">
-                <img
-                  src="hwit-alt.avif"
-                  alt=""
-                  className="h-full w-full object-cover"
-                />
+        <section className="mt-20">
+          <div className="ctx-container-vxt2">
+            <div className="wrapper">
+              <h1 className="text-neutral-700 bg-neutral-200 w-max mx-auto rounded-full px-5 py-1 font-[600]">
+                ABOUT US
+              </h1>
+              {/* <p
+                className={`text-neutral-600 text-center text-4xl ${geist.className} leading-[50px] mt-5`}
+              >
+                Discover{" "}
+                <span className="text-black">your perfect vacation</span> with
+                <span className="text-black"> Where Should I Vacation</span>.
+                Our AI and partners{" "}
+                <span className="text-black">
+                  analyzes thousands of options
+                </span>{" "}
+                to deliver
+                <span className="text-black"> custom itineraries</span>,
+                <span className="text-black"> hotel and flight deals</span>, and
+                experiences
+                <span className="text-black"> tailored just for you</span>. We
+                make
+                <span className="text-black"> travel planning effortless</span>,
+                <span className="text-black"> personalized</span>, and
+                <span className="text-black"> fun</span>, while keeping
+                everything else simple, intuitive, and hassle-free.
+              </p> */}
+              <ScrollReveal
+                baseOpacity={0}
+                enableBlur={true}
+                baseRotation={5}
+                blurStrength={10}
+              >
+                Discover your perfect vacation with Where Should I Vacation. Our
+                AI and partners analyzes thousands of options to deliver custom
+                itineraries, hotel and flight deals, and experiences tailored
+                just for you. We make travel planning effortless, personalized,
+                and fun, while keeping everything else simple, intuitive, and
+                hassle-free.
+              </ScrollReveal>
+            </div>
+          </div>
+        </section>
+        <section className="mt-25 bg-neutral-100 py-15">
+          <div className="ctx-container-vxt2">
+            <div className="wrapper">
+              <h1 className="text-center text-3xl font-[700]">
+                Behind the Scenes
+              </h1>
+              <p className="text-center mt-2 text-neutral-800">
+                How does Where Should I Vacation Work?
+              </p>
+              <div
+                className={`grid grid-cols-2 gap-10 max-w-[80%] mx-auto mt-10 ${geist.className}`}
+              >
+                <div className="steps-container space-y-10">
+                  {/* Step 1 */}
+                  <motion.div
+                    className="side-1 flex flex-col items-start space-y-2"
+                    initial={{ opacity: 0, y: 40, scale: 0.98 }}
+                    whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ duration: 0.7, ease: "anticipate" }}
+                    viewport={{ once: true, amount: 0.5 }}
+                  >
+                    <p className="rounded-full px-5 py-1 bg-blue-600 text-white font-bold">
+                      1
+                    </p>
+                    <h1 className="text-xl font-semibold">Tell Us About You</h1>
+                    <p className="text-neutral-500">
+                      Enter your travel preferences, dream destinations, and
+                      ideal vibe. The more we know, the better your trip!
+                    </p>
+                  </motion.div>
+
+                  {/* Step 2 */}
+                  <motion.div
+                    className="side-1 flex flex-col items-start space-y-2"
+                    initial={{ opacity: 0, y: 40, scale: 0.98 }}
+                    whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{
+                      duration: 0.7,
+                      ease: "anticipate",
+                      delay: 0.18,
+                    }}
+                    viewport={{ once: true, amount: 0.5 }}
+                  >
+                    <p className="rounded-full px-5 py-1 bg-yellow-600 text-white font-bold">
+                      2
+                    </p>
+                    <h1 className="text-xl font-semibold">
+                      We Crunch the Data
+                    </h1>
+                    <p className="text-neutral-500">
+                      Our AI aggregates thousands of options—from flights and
+                      hotels to attractions—to find the best matches for your
+                      style.
+                    </p>
+                  </motion.div>
+
+                  {/* Step 3 */}
+                  <motion.div
+                    className="side-1 flex flex-col items-start space-y-2"
+                    initial={{ opacity: 0, y: 40, scale: 0.98 }}
+                    whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{
+                      duration: 0.7,
+                      ease: "anticipate",
+                      delay: 0.36,
+                    }}
+                    viewport={{ once: true, amount: 0.5 }}
+                  >
+                    <p className="rounded-full px-5 py-1 bg-orange-600 text-white font-bold">
+                      3
+                    </p>
+                    <h1 className="text-xl font-semibold">
+                      Your Personalized Adventure
+                    </h1>
+                    <p className="text-neutral-500">
+                      See your tailor-made places with top hotels, flights,
+                      deals, and experiences—ready to book and enjoy!
+                    </p>
+                  </motion.div>
+                </div>
+                <div className="side-2 grid place-items-center">
+                  <motion.img
+                    src="bts2.svg"
+                    alt=""
+                    className="w-full"
+                    initial={{ filter: "grayscale(1)", scale: 0.97 }}
+                    whileInView={{ filter: "grayscale(0)", scale: 1 }}
+                    transition={{ duration: 1, ease: "easeOut" }}
+                    viewport={{ once: true, amount: 0.4 }}
+                    style={{ willChange: "filter, transform" }}
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -692,95 +790,7 @@ export default function Home({ user, api }: any) {
                   </div>
                 </div>
                 <div className="basis-1/2">
-                  <div className="flex justify-center items-center h-full relative">
-                    <img
-                      src="/itinerary-ex.png"
-                      alt="Itinerary Example"
-                      style={{
-                        width: "90%",
-                        maxWidth: "320px",
-                        transform:
-                          "perspective(700px) rotateY(-16deg) rotateX(8deg) scale(0.98)",
-                        objectFit: "cover",
-                        display: "block",
-                      }}
-                    />
-                    {/* Chat head */}
-                    <div
-                      style={{
-                        position: "absolute",
-                        left: "10%",
-                        bottom: "-10%",
-                        zIndex: 2,
-                        minWidth: "210px",
-                        background: "white",
-                        boxShadow: "0 2px 12px 0 rgba(0,0,0,0.04)",
-                        borderRadius: "1.5rem",
-                        padding: "1.1rem 1.3rem",
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "0.7rem",
-                      }}
-                    >
-                      <div className="flex flex-col gap-2 max-[600px]:text-sm">
-                        <div className="flex items-center gap-2">
-                          <span className="font-semibold text-gray-800 min-w-[56px]">
-                            What
-                          </span>
-                          <span className="text-sm font-[400] text-gray-800">
-                            photography... budget trip if possible.
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-semibold text-gray-800 min-w-[56px]">
-                            Where
-                          </span>
-                          <span className="text-sm font-[400] text-gray-800">
-                            Tokyo, Japan
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-semibold text-gray-800 min-w-[56px]">
-                            When
-                          </span>
-                          <span className="text-sm font-[400] text-gray-800">
-                            May 12 - May 18
-                          </span>
-                        </div>
-                        <div className="flex items-start gap-2">
-                          <span className="font-semibold text-gray-800 min-w-[56px] mt-1">
-                            Prefer
-                          </span>
-                          <div className="flex flex-wrap gap-2">
-                            <button
-                              type="button"
-                              className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium"
-                            >
-                              Adventure
-                            </button>
-                            <button
-                              type="button"
-                              className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium"
-                            >
-                              All
-                            </button>
-                            <button
-                              type="button"
-                              className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium"
-                            >
-                              Foodie
-                            </button>
-                            <button
-                              type="button"
-                              className="px-3 py-1 bg-pink-100 text-pink-700 rounded-full text-sm font-medium"
-                            >
-                              Culture
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  <ItineraryShowcase imageSrc="/itinerary-ex.png" />
                 </div>
               </div>
             </div>
@@ -797,7 +807,7 @@ export default function Home({ user, api }: any) {
                 when you need it. Simple, transparent, and commitment-free.
               </p>
               <div className="pricing-structure grid grid-cols-3 gap-2 mt-10 max-[900px]:grid-cols-1">
-                <div className="price-card border-1 border-neutral-100 shadow-sm shadow-neutral-100 px-10 py-8 rounded-md">
+                <div className="price-card bg-white  border-1 border-neutral-100 shadow-sm shadow-neutral-100 px-10 py-8 rounded-md">
                   <div className="tag bg-neutral-50 w-max px-5 py-1 rounded-full font-[600] border-1 border-neutral-200 text-xs">
                     <span>Traveler</span>
                   </div>
@@ -840,7 +850,7 @@ export default function Home({ user, api }: any) {
                   </ul>
                 </div>
                 <div className="flex gap-2 max-[900px]:flex-col-reverse">
-                  <div className="price-card border-1 text-white border-neutral-100 shadow-sm shadow-neutral-100 px-10 py-8 rounded-md bg-gradient-to-b from-orange-600 to-blue-500 scale-110 z-10 max-[900px]:scale-100">
+                  <div className="price-card bg-white  border-1 text-white border-neutral-100 shadow-sm shadow-neutral-100 px-10 py-8 rounded-md bg-gradient-to-b from-orange-600 to-blue-500 scale-110 z-10 max-[900px]:scale-100">
                     <div className="tag bg-orange-50 text-orange-600 w-max px-5 py-1 rounded-full font-[600] border-1 border-orange-200 text-xs">
                       <span>Journeyman</span>
                     </div>
@@ -891,7 +901,7 @@ export default function Home({ user, api }: any) {
                     )}
                   </div>
                 </div>
-                <div className="price-card border-1 border-neutral-100 shadow-sm shadow-neutral-100 px-10 py-8 rounded-md">
+                <div className="price-card bg-white  border-1 border-neutral-100 shadow-sm shadow-neutral-100 px-10 py-8 rounded-md">
                   <div className="tag bg-blue-50 text-blue-600 w-max px-5 py-1 rounded-full font-[600] border-1 border-blue-200 text-xs">
                     <span>Explorer</span>
                   </div>
@@ -945,27 +955,9 @@ export default function Home({ user, api }: any) {
             </div>
           </div>
         </section>
-        <section className="faq">
-          <div className="ctx-container">
-            <div className="wrapper">
-              <FAQAccordion />
-            </div>
-          </div>
-        </section>
-        <section className="ready-to-try py-5 mt-10">
-          <div className="ctx-container">
-            <div className="wrapper">
-              <h1 className="font-[700] text-3xl text-center mt-10">
-                Ready, Set, Explore!
-              </h1>
-              <Link href="#generate">
-                <button className="bg-orange-600 hover:bg-orange-500 shadow-sm shadow-neutral-100 px-8 py-2 text-white rounded-md mx-auto font-[600] block mt-5">
-                  Let's Explore
-                </button>
-              </Link>
-            </div>
-          </div>
-        </section>
+        <div className="pt-10 pb-25">
+          <FAQAccordion />
+        </div>
       </main>
       <Footer />
     </>

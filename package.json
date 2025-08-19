@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev --turbopack -p 4242",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -22,6 +22,7 @@
     "dayjs": "^1.11.13",
     "dotenv": "^17.2.1",
     "framer-motion": "^12.23.11",
+    "gsap": "^3.13.0",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.526.0",
     "moment": "^2.30.1",
