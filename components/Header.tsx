@@ -64,17 +64,17 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <header className="sticky top-0 z-[999] bg-white">
+    <header className="sticky top-0 z-[999]">
       <div className="bg-orange-600 w-full strip px-5">
-        <div className="ctx-container-vxt2">
-          <div className="wrapper flex justify-end py-[3px] relative ">
+        <div className="ctx-container">
+          <div className="wrapper flex justify-end py-[5px] relative ">
             {userData__final ? (
               <div className="relative" ref={dropdownRef}>
                 <button
                   className="flex items-center gap-2 text-white font-[500] px-4 py-0.5 rounded hover:bg-orange-700 transition-colors focus:outline-none focus:ring-2 focus:ring-orange-300 max-[700px]:hidden"
                   onClick={() => setShowDropdown((v) => !v)}
                 >
-                  <span className="text-xs">
+                  <span className="text-sm">
                     Logged in as {userData__final.name}
                   </span>
                   <ChevronDown size={18} />
@@ -183,29 +183,33 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
       </div>
-      <div className="ctx-container-vxt2 py-5">
-        <div className="wrapper flex justify-between items-center">
-          <div className="logo">
-            <Link href="/">
-              <img src="wta.svg" alt="" className="h-[30px]" />
-            </Link>
-          </div>
-          <div className="flex items-center">
-            <ul className="flex gap-2 items-center ">
-              {navButtons.map((navBtn, i) => {
-                return (
-                  <Link href={navBtn.route}>
-                    <li className="" key={i}>
-                      <button className="px-5">
-                        <span className="font-[400] transition-all hover:font-[500] hover:text-orange-600">
-                          {navBtn.name}
-                        </span>
-                      </button>
-                    </li>
+      <div className="w-full main-header shadow-sm shadow-neutral-50 border-b-1 py-3 border-neutral-50 bg-white  px-5">
+        <div className="ctx-container">
+          <div className="wrapper flex justify-between py-[5px]">
+            <div className="logo">
+              <Link href="/">
+                <img src="wta.svg" alt="" className="w-[140px]" />
+              </Link>
+            </div>
+            <ul className="action-buttons flex gap-2 items-center font-[500] text-sm max-[700px]:hidden">
+              {navButtons.map((btn) => (
+                <li key={btn.route}>
+                  <Link href={btn.route}>
+                    <button className="select-none px-3 text-sm font-[600] hover:text-orange-600 transition-colors">
+                      {btn.name}
+                    </button>
                   </Link>
-                );
-              })}
+                </li>
+              ))}
             </ul>
+            <button
+              className="hidden max-[700px]:block"
+              aria-label={showMobileMenu ? "Close menu" : "Open menu"}
+              aria-expanded={showMobileMenu}
+              onClick={() => setShowMobileMenu((v) => !v)}
+            >
+              {showMobileMenu ? <X /> : <Menu />}
+            </button>
           </div>
         </div>
       </div>
