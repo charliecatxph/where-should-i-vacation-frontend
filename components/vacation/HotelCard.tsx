@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { Anton, Inter } from "next/font/google";
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
@@ -11,6 +12,7 @@ interface HotelCardParameters {
   placeData: any;
   hotel: any;
   i: number;
+  dates: string
 }
 
 const haversineDistance = (
@@ -29,8 +31,8 @@ const haversineDistance = (
   const a =
     Math.sin(dLat / 2) ** 2 +
     Math.cos(toRadians(lat1)) *
-      Math.cos(toRadians(lat2)) *
-      Math.sin(dLng / 2) ** 2;
+    Math.cos(toRadians(lat2)) *
+    Math.sin(dLng / 2) ** 2;
 
   // asin(=> sqrt())
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
@@ -42,102 +44,6 @@ const haversineDistance = (
   } else {
     return `${(distanceInMeters / 1000).toFixed(1)}km`;
   }
-};
-
-const HotelDropdown = ({
-  isOpen,
-  onToggle,
-  buttonRef,
-  hotel,
-  buttonIndex,
-}: {
-  isOpen: boolean;
-  onToggle: () => void;
-  buttonRef: React.MutableRefObject<{
-    [key: number]: HTMLButtonElement | null;
-  }>;
-  hotel: any;
-  buttonIndex: number;
-}) => {
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const currentButton = buttonRef.current[buttonIndex];
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node) &&
-        currentButton &&
-        !currentButton.contains(event.target as Node)
-      ) {
-        onToggle();
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [isOpen, onToggle, buttonRef, buttonIndex]);
-
-  const getDropdownPosition = () => {
-    const currentButton = buttonRef.current[buttonIndex];
-    if (!currentButton) return { top: 0, left: 0 };
-
-    const rect = currentButton.getBoundingClientRect();
-    return {
-      top: rect.bottom + window.scrollY + 5,
-      left: rect.left + window.scrollX,
-      width: rect.width,
-    };
-  };
-
-  const position = getDropdownPosition();
-  const encodedName = encodeURIComponent(hotel.displayName);
-
-  const bookingOptions = [
-    {
-      name: "Booking.com",
-      url: `https://www.booking.com/searchresults.html?ss=${encodedName}`,
-    },
-  ];
-
-  if (!isOpen) return null;
-
-  return createPortal(
-    <motion.div
-      ref={dropdownRef}
-      initial={{ opacity: 0, scale: 0.95, y: -10 }}
-      animate={{ opacity: 1, scale: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.95, y: -10 }}
-      transition={{ duration: 0.15 }}
-      style={{
-        position: "absolute",
-        top: position.top,
-        left: position.left,
-        width: position.width,
-        zIndex: 1000,
-      }}
-      className={`${inter.className} bg-white rounded-lg shadow-lg border border-gray-200 py-1 min-w-[250px]`}
-    >
-      {bookingOptions.map((option, index) => (
-        <button
-          key={option.name}
-          onClick={() => {
-            window.open(option.url, "_blank");
-            onToggle();
-          }}
-          className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors duration-150 flex items-center justify-between"
-        >
-          <span>Book with {option.name}</span>
-        </button>
-      ))}
-    </motion.div>,
-    document.body
-  );
 };
 
 const HotelRating = ({ rating }: { rating: number }) => {
@@ -163,12 +69,10 @@ export default function HotelCard({
   placeData,
   hotel,
   i,
+  dates
 }: HotelCardParameters) {
-  const [openDropdown, setOpenDropdown] = useState<number | null>(null);
-  const dropdownButtonRefs = useRef<{
-    [key: number]: HTMLButtonElement | null;
-  }>({});
 
+  const [openDropdown, setOpenDropdown] = useState<number | null>(null);
   // Compute distance thru haversine p1-p2
   // d = 2 * R * asin(sqrt(sin²((lat2 - lat1)/2) + cos(lat1) * cos(lat2) * sin²((lng2 - lng1)/2)))
 
@@ -219,30 +123,16 @@ export default function HotelCard({
           <div className="flex items-center gap-2 mb-4 text-sm opacity-75 basis-1/2">
             <span>📍 {hotel.formattedAddress.slice(0, 60)}</span>
           </div>
-          <button
-            ref={(el) => {
-              dropdownButtonRefs.current[i] = el;
-            }}
-            onClick={() => setOpenDropdown(openDropdown === i ? null : i)}
-            className="bg-white px-4 py-1 rounded-lg text-black flex justify-between items-center gap-2 hover:bg-neutral-100 transition-all duration-200"
-          >
-            <span className="font-semibold text-sm">Book Now</span>
-            <motion.div
-              animate={{
-                rotate: openDropdown === i ? 180 : 0,
-              }}
-              transition={{ duration: 0.2 }}
+          <Link target="_blank" href={`https://www.booking.com/searchresults.html?ss=${hotel.displayName}${dates ? `&checkin=${dates.split(" - ")[0]}&checkout=${dates.split(" - ")[1]}` : ""}`}>
+            <button
+
+              className="bg-white px-4 py-1 rounded-lg text-black flex justify-between items-center gap-2 hover:bg-neutral-100 transition-all duration-200"
             >
-              <ChevronDown />
-            </motion.div>
-          </button>
-          <HotelDropdown
-            isOpen={openDropdown === i}
-            onToggle={() => setOpenDropdown(openDropdown === i ? null : i)}
-            buttonRef={dropdownButtonRefs}
-            hotel={hotel}
-            buttonIndex={i}
-          />
+              <span className="font-semibold text-sm">Book Now</span>
+
+
+            </button>
+          </Link>
         </div>
       </div>
     </motion.div>

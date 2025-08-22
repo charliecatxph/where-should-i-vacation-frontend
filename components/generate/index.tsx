@@ -12,6 +12,7 @@ interface PlaceCardProps {
   location: string;
   mapsUrl: string;
   placeUrl: string;
+  dates: string;
 }
 
 export const PlaceCard: FC<PlaceCardProps> = ({
@@ -21,6 +22,7 @@ export const PlaceCard: FC<PlaceCardProps> = ({
   location,
   mapsUrl,
   placeUrl,
+  dates,
 }) => {
   return (
     <div className="rounded-xl shadow-md shadow-neutral-100 bg-white overflow-hidden w-full mx-auto transition-transform">
@@ -77,7 +79,7 @@ export const PlaceCard: FC<PlaceCardProps> = ({
             View this Place
           </a>
           <Link
-            href={`/vacation?place=${id}`}
+            href={`/vacation?place=${id}&dates=${dates}`}
             className="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 px-2 rounded-md text-center text-sm transition"
           >
             Explore

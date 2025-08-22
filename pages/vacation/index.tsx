@@ -26,6 +26,7 @@ import PlaceShowcase from "@/components/vacation/PlaceShowcase";
 import AviasalesCard from "@/components/vacation/AviasalesCard";
 import ItineraryAd from "@/components/vacation/ItineraryAd";
 import Footer from "@/components/Footer";
+import Head from "next/head";
 
 const inter = Inter({ subsets: ["latin"] });
 const anton = Anton({ weight: "400", subsets: ["latin"] });
@@ -162,8 +163,8 @@ export default function Vacation({ user, queries, api }: any) {
     },
     enabled: Boolean(
       placeData?.location?.latitude &&
-        placeData?.location?.longitude &&
-        userData.token
+      placeData?.location?.longitude &&
+      userData.token
     ),
     retry: 1,
     refetchOnWindowFocus: false,
@@ -197,12 +198,15 @@ export default function Vacation({ user, queries, api }: any) {
   }, [hotelsError]);
 
   const navButtons = [
-    { name: "Ordinary Generation", route: "/" },
-    { name: "Itinerary Builder", route: "/itinerary-builder" },
+    { name: "Generation", route: "/" },
   ];
 
   return (
     <>
+      <Head>
+        <title>{placeData?.displayName?.text || "Getting place..."}</title>
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
       <main className={`${inter.className} relative`}>
         <Header
           userData__final={userData__final}
@@ -219,6 +223,7 @@ export default function Vacation({ user, queries, api }: any) {
                 hotelsLoading={hotelsLoading}
                 hotelsData={hotelsData}
                 placeData={placeData}
+                dates={queries?.dates ?? ""}
               />
               <AviasalesCard />
               <ItineraryAd />

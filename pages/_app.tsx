@@ -9,6 +9,7 @@ import { store } from "@/redux/store";
 import { ModalProvider, useModal } from "@/components/modals/ModalContext";
 import Modal from "@/components/modals/Modal";
 import { useState } from "react";
+import { ReactQueryDevtools} from "@tanstack/react-query-devtools"
 export default function App({ Component, pageProps }: AppProps) {
   const [queryClient] = useState(() => new QueryClient());
   return (
@@ -19,6 +20,7 @@ export default function App({ Component, pageProps }: AppProps) {
             <ModalProvider>
               <Component {...pageProps} />
               <Modal />
+              <ReactQueryDevtools/>
             </ModalProvider>
           </Provider>
         </MantineProvider>

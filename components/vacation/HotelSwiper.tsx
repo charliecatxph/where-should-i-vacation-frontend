@@ -8,6 +8,7 @@ interface HotelSwiperParameters {
   hotelsLoading: boolean;
   hotelsData: any;
   placeData: any;
+  dates: string;
 }
 
 const inter = Inter({ subsets: ["latin"] });
@@ -68,6 +69,7 @@ export default function HotelSwiper({
   hotelsLoading,
   hotelsData,
   placeData,
+  dates,
 }: HotelSwiperParameters) {
   return (
     <section className="hotel-swiper">
@@ -103,7 +105,7 @@ export default function HotelSwiper({
                   .sort((a: any, b: any) => a.estimatedPrice - b.estimatedPrice)
                   .map((hotel: any, i: number) => {
                     return (
-                      <HotelCard placeData={placeData} hotel={hotel} i={i} />
+                      <HotelCard placeData={placeData} hotel={hotel} i={i} dates={dates} />
                     );
                   })}
             </div>

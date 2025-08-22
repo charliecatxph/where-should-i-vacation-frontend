@@ -56,7 +56,11 @@ const ItineraryShowcase: React.FC<ItineraryShowcaseProps> = ({
       { threshold: 1 }
     );
     observerRef.current.observe(node);
-    return () => observerRef.current && observerRef.current.disconnect();
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
   }, [animStage]);
 
   // Animation sequence

@@ -22,6 +22,7 @@ import {
   Star,
 } from "lucide-react";
 import { useRouter } from "next/router";
+import Head from "next/head";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -173,13 +174,16 @@ export default function History({ user, api }: any) {
   });
 
   const navButtons = [
-    { name: "Ordinary Generation", route: "/" },
-    { name: "Itinerary Builder", route: "/itinerary-builder" },
+    { name: "Generation", route: "/" },
     { name: "Itinerary History", route: "/itinerary-history" },
   ];
 
   return (
     <>
+      <Head>
+        <title>History | Where Should I Vacation</title>
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
       <main className={`${inter.className} relative`}>
         <Header
           userData__final={userData__final}

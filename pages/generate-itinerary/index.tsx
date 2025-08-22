@@ -13,13 +13,14 @@ import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { CircularProgress } from "@mui/material";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import Footer from "@/components/Footer";
-import { ArrowUpRight, Share } from "lucide-react";
+import { ArrowUpRight, Cloud, Lightbulb, MapPin, Share, Thermometer, Wind } from "lucide-react";
 import AviasalesCard from "@/components/vacation/AviasalesCard";
 import { handleAxiosError } from "@/functions/handleAxiosError";
 import { useModal } from "@/components/modals/ModalContext";
-import { fork } from "node:child_process";
+import Link from "next/link"
+import Head from "next/head";
 
 export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   const udc = await authGate(ctx);
@@ -58,6 +59,228 @@ const getSphericalCenter = (coords: Coordinate[]): Coordinate => {
     latitude: (latRad * 180) / Math.PI,
     longitude: (lngRad * 180) / Math.PI,
   };
+};
+
+// Beautiful loading skeleton component with progress indicators
+const ItineraryLoadingSkeleton = ({ isLoading, isSuccess }: {
+  isLoading: boolean;
+  isSuccess: boolean;
+}) => {
+  const [currentStep, setCurrentStep] = useState(0);
+  const [progress, setProgress] = useState(0);
+  const [showResults, setShowResults] = useState(false);
+
+  const steps = [
+    { text: "Analyzing your preferences...", duration: 20000 },
+    { text: "Finding the perfect locations...", duration: 35000 },
+    { text: "Curating unique experiences...", duration: 30000 },
+    { text: "Optimizing your schedule...", duration: 25000 },
+    { text: "Cross-referencing with local insights...", duration: 20000 },
+    { text: "Adding final touches...", duration: 30000 },
+  ];
+
+  useEffect(() => {
+    if (!isLoading) return;
+
+    const totalDuration = 160000; // 2.67 minutes
+    const stepDuration = totalDuration / steps.length;
+
+    // Progress animation - stop at 95% until real data arrives
+    const progressInterval = setInterval(() => {
+      setProgress(prev => {
+        if (prev >= 95) return 95; // Stop at 95% until real data arrives
+        return prev + (95 / (totalDuration / 100));
+      });
+    }, 100);
+
+    const stepInterval = setInterval(() => {
+      setCurrentStep(prev => {
+        if (prev >= steps.length - 1) return steps.length - 1;
+        return prev + 1;
+      });
+    }, stepDuration);
+
+    return () => {
+      clearInterval(progressInterval);
+      clearInterval(stepInterval);
+    };
+  }, [isLoading]);
+
+  // Jump to 100% when data arrives
+  useEffect(() => {
+    if (isSuccess && progress > 0) {
+      setProgress(100);
+      setCurrentStep(steps.length - 1);
+
+      // Pause briefly then hide skeleton and show results
+      const timer = setTimeout(() => {
+        setShowResults(true);
+      }, 1500);
+
+      return () => clearTimeout(timer);
+    }
+  }, [isSuccess, progress]);
+
+  if (showResults) {
+    return null;
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="w-full py-8 max-[500px]:py-4"
+    >
+      {/* Header Skeleton */}
+      <motion.div
+        className="flex justify-between mt-5 mb-8 max-[800px]:flex-col max-[800px]:gap-4 max-[500px]:mt-2 max-[500px]:mb-4"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+      >
+        <div className="flex flex-col gap-3">
+          <div className="h-8 w-80 bg-gradient-to-r from-neutral-200 via-neutral-100 to-neutral-200 rounded-lg animate-pulse max-[800px]:w-64 max-[500px]:w-full max-[500px]:h-6" />
+          <div className="h-1 w-20 bg-orange-600 rounded-full max-[500px]:w-16" />
+          <div className="h-4 w-48 bg-gradient-to-r from-neutral-200 via-neutral-100 to-neutral-200 rounded animate-pulse max-[800px]:w-40 max-[500px]:w-full max-[500px]:h-3" />
+          <div className="h-4 w-96 bg-gradient-to-r from-neutral-200 via-neutral-100 to-neutral-200 rounded animate-pulse max-[800px]:w-64 max-[500px]:w-full max-[500px]:h-3" />
+        </div>
+      </motion.div>
+
+      {/* Progress Section */}
+      <motion.div
+        className="bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200 rounded-2xl p-8 mb-8 max-[800px]:p-6 max-[500px]:p-4 max-[500px]:mb-4"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.2 }}
+      >
+        <div className="flex flex-col items-center gap-6 max-[500px]:gap-4">
+          <div className="relative">
+            <CircularProgress
+              size={60}
+              thickness={3}
+              sx={{
+                color: '#ea580c',
+                '& .MuiCircularProgress-circle': {
+                  strokeLinecap: 'round',
+                }
+              }}
+            />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-sm font-semibold text-orange-700 max-[500px]:text-xs">
+                {Math.round(progress)}%
+              </span>
+            </div>
+          </div>
+
+          <div className="text-center">
+            <motion.h3
+              key={currentStep}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-xl font-semibold text-orange-800 mb-2 max-[800px]:text-lg max-[500px]:text-base max-[500px]:mb-1"
+            >
+              {steps[currentStep]?.text}
+            </motion.h3>
+            <p className="text-orange-600 text-sm max-[500px]:text-xs">
+              This usually takes about 2-3 minutes. Hang tight! ✨
+            </p>
+            <p className="text-orange-600 text-sm max-[500px]:text-xs">
+              Long itineraries take longer to create.
+            </p>
+            <p className="text-orange-600 text-xs mt-2 flex gap-5 items-center max-[800px]:flex-col max-[800px]:gap-2 max-[500px]:text-xs">
+              Your itineraries can be viewed in <Link href="/itinerary-history"><span className="block px-5 py-2 bg-white rounded-lg text-black font-[500] flex items-center gap-2 max-[500px]:px-3 max-[500px]:py-1.5 max-[500px]:text-xs"><MapPin className="text-blue-600" size={15} />{" "}Itinerary History</span></Link>.
+            </p>
+          </div>
+
+          {/* Progress Bar */}
+          <div className="w-full max-w-md bg-orange-200 rounded-full h-2 max-[500px]:max-w-full">
+            <motion.div
+              className="bg-orange-600 h-2 rounded-full"
+              initial={{ width: 0 }}
+              animate={{ width: `${progress}%` }}
+              transition={{ duration: 0.5 }}
+            />
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Day Selector Skeleton */}
+      <motion.div
+        className="mb-8 max-[500px]:mb-4"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+      >
+        <div className="flex gap-2 bg-neutral-50 rounded-xl p-1 border border-neutral-100 max-[600px]:grid max-[600px]:grid-cols-2 max-[400px]:grid-cols-1">
+          {[1, 2, 3, 4].map((day) => (
+            <div
+              key={day}
+              className="flex-1 px-4 py-2 bg-gradient-to-r from-neutral-200 via-neutral-100 to-neutral-200 rounded-lg animate-pulse h-10 max-[600px]:flex-none max-[500px]:h-8"
+            />
+          ))}
+        </div>
+      </motion.div>
+
+      {/* Places Skeleton */}
+      <motion.div
+        className="mb-8 max-[500px]:mb-4"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+      >
+        <div className="h-6 w-20 bg-gradient-to-r from-neutral-200 via-neutral-100 to-neutral-200 rounded mb-4 animate-pulse max-[500px]:h-5 max-[500px]:w-16 max-[500px]:mb-3" />
+        <div className="grid grid-cols-3 gap-4 max-[900px]:grid-cols-2 max-[600px]:grid-cols-1 max-[500px]:gap-3">
+          {[1, 2, 3, 4, 5, 6].map((item) => (
+            <motion.div
+              key={item}
+              className="rounded-xl border border-neutral-200 overflow-hidden shadow-sm max-[500px]:rounded-lg"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.1 * item }}
+            >
+              <div className="h-44 w-full bg-gradient-to-br from-neutral-200 via-neutral-100 to-neutral-200 animate-pulse max-[800px]:h-36 max-[500px]:h-32" />
+              <div className="p-4 space-y-3 max-[500px]:p-3 max-[500px]:space-y-2">
+                <div className="h-4 w-3/4 bg-gradient-to-r from-neutral-200 via-neutral-100 to-neutral-200 rounded animate-pulse max-[500px]:h-3" />
+                <div className="h-3 w-1/2 bg-gradient-to-r from-neutral-200 via-neutral-100 to-neutral-200 rounded animate-pulse max-[500px]:h-2.5" />
+                <div className="h-3 w-full bg-gradient-to-r from-neutral-200 via-neutral-100 to-neutral-200 rounded animate-pulse max-[500px]:h-2.5" />
+                <div className="h-3 w-2/3 bg-gradient-to-r from-neutral-200 via-neutral-100 to-neutral-200 rounded animate-pulse max-[500px]:h-2.5" />
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </motion.div>
+
+      {/* Hotels Skeleton */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5 }}
+      >
+        <div className="h-6 w-16 bg-gradient-to-r from-neutral-200 via-neutral-100 to-neutral-200 rounded mb-4 animate-pulse max-[500px]:h-5 max-[500px]:w-14 max-[500px]:mb-3" />
+        <div className="grid grid-cols-3 gap-4 max-[900px]:grid-cols-2 max-[600px]:grid-cols-1 max-[500px]:gap-3">
+          {[1, 2, 3].map((item) => (
+            <motion.div
+              key={item}
+              className="rounded-xl border border-neutral-200 overflow-hidden shadow-sm max-[500px]:rounded-lg"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.1 * item }}
+            >
+              <div className="h-40 w-full bg-gradient-to-br from-neutral-200 via-neutral-100 to-neutral-200 animate-pulse max-[800px]:h-32 max-[500px]:h-28" />
+              <div className="p-4 space-y-3 max-[500px]:p-3 max-[500px]:space-y-2">
+                <div className="h-4 w-3/4 bg-gradient-to-r from-neutral-200 via-neutral-100 to-neutral-200 rounded animate-pulse max-[500px]:h-3" />
+                <div className="h-3 w-1/2 bg-gradient-to-r from-neutral-200 via-neutral-100 to-neutral-200 rounded animate-pulse max-[500px]:h-2.5" />
+                <div className="flex justify-between items-center">
+                  <div className="h-4 w-24 bg-gradient-to-r from-neutral-200 via-neutral-100 to-neutral-200 rounded animate-pulse max-[500px]:h-3 max-[500px]:w-20" />
+                  <div className="h-8 w-16 bg-gradient-to-r from-orange-200 via-orange-100 to-orange-200 rounded animate-pulse max-[500px]:h-6 max-[500px]:w-12" />
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </motion.div>
+    </motion.div>
+  );
 };
 
 export default function GenerateItinerary({ user, queries, api }: any) {
@@ -105,8 +328,7 @@ export default function GenerateItinerary({ user, queries, api }: any) {
   }, [router]);
 
   const navButtons = [
-    { name: "Ordinary Generation", route: "/" },
-    { name: "Itinerary Builder", route: "/itinerary-builder" },
+    { name: "Generation", route: "/" },
     { name: "Itinerary History", route: "/itinerary-history" },
   ];
 
@@ -138,6 +360,13 @@ export default function GenerateItinerary({ user, queries, api }: any) {
 
       if (!res.data?.cached) {
         dispatch(decrementItineraryCredits());
+      }
+
+      if (res.data?.cached) {
+        setParameters(pv => ({
+          ...pv,
+          ...res.data.itinerary.userQuery
+        }))
       }
       return res.data.itinerary?.[0] ?? res.data.itinerary;
     },
@@ -244,14 +473,24 @@ export default function GenerateItinerary({ user, queries, api }: any) {
     retry: 1,
     enabled: Boolean(
       queries.uuid &&
-        user.token &&
-        centralPoint?.latitude &&
-        centralPoint.longitude
+      user.token &&
+      centralPoint?.latitude &&
+      centralPoint.longitude
     ),
   });
 
+  function getDensityColor(density: number) {
+    const value = Math.max(0, Math.min(5, density));
+    const hue = 120 - 120 * (value / 5); // 120 (green) to 0 (red)
+    return `hsl(${hue}, 80%, 45%)`;
+  }
+
   return (
     <>
+      <Head>
+        <title>{itineraryData?.itinerary_title ?? "Generating..."}</title>
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
       <main>
         <Header
           userData__final={userData__final}
@@ -261,16 +500,13 @@ export default function GenerateItinerary({ user, queries, api }: any) {
         <section className="py-6">
           <div className="ctx-container">
             <div className="wrapper px-5">
-              {/* Loading */}
-              {isLoading && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="w-full flex flex-col items-center justify-center py-24 gap-4"
-                >
-                  <CircularProgress size={36} disableShrink />
-                  <p className="text-neutral-600">Generating itinerary…</p>
-                </motion.div>
+              {/* Loading - only show if loading and no cached data */}
+              {isLoading && !itineraryData && (
+                <ItineraryLoadingSkeleton
+                  isLoading={isLoading}
+                  isSuccess={isSuccess}
+
+                />
               )}
 
               {/* Error */}
@@ -317,6 +553,109 @@ export default function GenerateItinerary({ user, queries, api }: any) {
                     </div>
                   </motion.div>
 
+                  <div className="grid grid-cols-2 mt-5 gap-5 max-[800px]:grid-cols-1">
+                    <motion.div
+                      className="bg-neutral-100 px-7 py-5 rounded-lg shadow-sm shadow-neutral-100 border-1 border-neutral-300"
+                      variants={itemReveal}
+                    >
+                      <h1 className="font-[500] text-lg flex items-center gap-5">
+                        <Thermometer size={18} /> Weather Forecast
+                      </h1>
+                      <div className="flex justify-center gap-10 flex-col mt-5">
+                        <div>
+                          <div className="flex justify-between items-center">
+                            <h1 className="text-2xl font-[600]">
+                              {
+                                itineraryData?.extras.expected_weather
+                                  .temperature.max_c
+                              }
+                              °C
+                            </h1>{" "}
+                            <div className="bg-orange-600 text-white text-center px-5 py-1 text-xs rounded-lg font-[500]">
+                              {
+                                itineraryData?.extras.expected_weather
+                                  .condition
+                              }
+                            </div>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <p className="text-neutral-600">
+                              Feels like{" "}
+                              {
+                                itineraryData?.extras.expected_weather
+                                  .temperature.feels_like_c
+                              }
+                              °C
+                            </p>{" "}
+                            <p className="text-right text-neutral-600">
+                              UV Index:{" "}
+                              {
+                                itineraryData?.extras.expected_weather
+                                  .uv_index
+                              }
+                            </p>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 max-[550px]:grid-cols-1 gap-5">
+                          <p className="text-neutral-600 text-sm">
+                            {
+                              itineraryData?.extras.expected_weather
+                                .details
+                            }
+                          </p>
+                          <div className="flex flex-col justify-center">
+                            <p className="flex gap-3 items-center text-neutral-600 text-sm">
+                              <Cloud size={18} />{" "}
+                              {
+                                itineraryData?.extras.expected_weather
+                                  .humidity_percent
+                              }
+                              % expected humidity
+                            </p>
+                            <p className="flex gap-3 items-center text-neutral-600 text-sm">
+                              <Wind size={18} />{" "}
+                              {
+                                itineraryData?.extras.expected_weather
+                                  .wind.speed_kph
+                              }{" "}
+                              kph
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                    <motion.div
+                      className="bg-neutral-100 px-7 py-5 rounded-lg shadow-sm shadow-neutral-100 border-1 border-neutral-300"
+                      variants={itemReveal}
+                    >
+                      <h1 className="font-[500] text-lg flex items-center gap-5">
+                        <Lightbulb size={18} /> Travel Insights
+                      </h1>
+                      <div className="mt-3">
+                        <div className="flex justify-between items-center">
+                          <h1 className="font-[500]">Crowd Density</h1>
+                          <p
+                            className="text-white px-5 py-1 text-xs rounded-lg font-[500]"
+                            style={{
+                              background: getDensityColor(
+                                itineraryData?.extras.p_density
+                              ),
+                            }}
+                          >
+                            {itineraryData?.extras.p_density} / 5
+                          </p>
+                        </div>
+                        <p className="text-sm mt-2 text-neutral-600">
+                          {itineraryData?.extras.p_density_expl}
+                        </p>
+                        <h1 className="font-[500] mt-5">Transportation Tip</h1>
+                        <p className="text-sm mt-1 text-neutral-600">
+                          {itineraryData?.extras.tr_advice}
+                        </p>
+                      </div>
+                    </motion.div>
+                  </div>
+
                   {/* Day selector */}
                   {Array.isArray(itineraryData.schedule) &&
                     itineraryData.schedule.length > 0 && (
@@ -327,11 +666,10 @@ export default function GenerateItinerary({ user, queries, api }: any) {
                               type="button"
                               key={idx}
                               onClick={() => setSelectedDayIndex(idx)}
-                              className={`flex-1 basis-0 min-w-[110px] px-4 py-2 text-sm rounded-lg transition-colors border text-center ${
-                                idx === selectedDayIndex
-                                  ? "bg-orange-600 text-white border-orange-600 shadow-sm"
-                                  : "bg-white text-neutral-700 border-neutral-200 hover:bg-neutral-100"
-                              }`}
+                              className={`flex-1 basis-0 min-w-[110px] px-4 py-2 text-sm rounded-lg transition-colors border text-center ${idx === selectedDayIndex
+                                ? "bg-orange-600 text-white border-orange-600 shadow-sm"
+                                : "bg-white text-neutral-700 border-neutral-200 hover:bg-neutral-100"
+                                }`}
                             >
                               Day {d.day ?? idx + 1}
                             </button>
@@ -361,8 +699,8 @@ export default function GenerateItinerary({ user, queries, api }: any) {
                   >
                     <h2 className="text-xl font-[700]">Places</h2>
                     {selectedDay &&
-                    Array.isArray(selectedDay.activities) &&
-                    selectedDay.activities.length > 0 ? (
+                      Array.isArray(selectedDay.activities) &&
+                      selectedDay.activities.length > 0 ? (
                       <motion.div
                         key={`day-${selectedDayIndex}`}
                         className="grid grid-cols-3 gap-4 max-[700px]:grid-cols-2 max-[500px]:grid-cols-1"
@@ -493,7 +831,7 @@ export default function GenerateItinerary({ user, queries, api }: any) {
                                   <a
                                     href={`https://www.booking.com/searchresults.html?ss=${encodeURIComponent(
                                       hotel.displayName
-                                    )}`}
+                                    )}${parameters.when ? `&checkin=${parameters.when.split(" - ")[0]}&checkout=${parameters.when.split(" - ")[1]}` : ""}`}
                                     target="_blank"
                                     rel="noreferrer"
                                     className="text-sm px-3 py-1.5 rounded-md bg-orange-600 text-white hover:bg-orange-700"

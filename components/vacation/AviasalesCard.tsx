@@ -5,7 +5,7 @@ export default function AviasalesCard() {
     <>
       <section className="">
         <div className="ctx-container">
-          <div className="wrapper mt-5 px-5">
+          <div className="wrapper mt-5">
             <div className="flex items-center  gap-5 aviasales-cta bg-gradient-to-br from-blue-800 to-blue-600 rounded-xl px-8 py-10 shadow-xl shadow-blue-200 max-[700px]:flex-col">
               <div className="h-full w-1/2 max-[700px]:w-full">
                 <h1 className="text-4xl font-[800] text-white mb-2 tracking-tight max-[800px]:text-2xl">

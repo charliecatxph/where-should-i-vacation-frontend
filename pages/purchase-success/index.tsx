@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { Check } from "lucide-react";
 import { GetServerSidePropsContext } from "next";
+import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -80,6 +81,10 @@ export default function PurchaseSuccess({ user, queries, api }: any) {
 
   return (
     <>
+      <Head>
+        <title>Purchase | Where Should I Vacation</title>
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
       <main
         className={`relative flex min-h-screen items-center justify-center overflow-hidden px-6 py-16 ${mainBgClass}`}
       >
