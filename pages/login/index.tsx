@@ -172,8 +172,21 @@ export default function Login({ api }: any) {
   };
 
   const handleGoogleLogin = () => {
-    const authUrl = `${api}/auth/google`;
+    const oauth2Endpoint = "https://accounts.google.com/o/oauth2/v2/auth";
+    const params = {
+      client_id:
+        "870221194790-573ia3vf100f1vm2mpp633605nmop5f2.apps.googleusercontent.com",
+      redirect_uri: `${window.location.origin}/finish_google_sso`,
+      response_type: "code",
+      scope: "openid email profile",
+      include_granted_scopes: "true",
+      state: "pass-through value",
+      prompt: "consent", // consent | none
+    };
+    const queryString = new URLSearchParams(params).toString();
+    const authUrl = `${oauth2Endpoint}?${queryString}`;
     window.location.href = authUrl;
+
   };
 
   const handleForgotPassword = async () => {
