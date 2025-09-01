@@ -9,6 +9,7 @@ import { CheckCircle } from "lucide-react";
 
 export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
  const { acctId } = ctx.query;
+ const absoluteServerUrl = `${process.env.ORIGIN}/api`;
 
  if (!acctId || typeof acctId !== 'string') {
   return {
@@ -20,17 +21,18 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
  }
 
  try {
-  const res = await axios.post(`${process.env.ABS_SERVER}/api/verify-account`, {
+  const res = await axios.post(`${absoluteServerUrl}/verify-account`, {
    acctId: acctId,
   });
 
   return {
    props: {
     success: true,
-    api: process.env.ABS_SERVER,
+    api: process.env.SERVER,
    },
   };
  } catch (error) {
+  console.log(error)
   return {
    redirect: {
     destination: '/login',

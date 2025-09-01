@@ -10,6 +10,7 @@ import { handleAxiosError } from "@/functions/handleAxiosError";
 import Head from "next/head";
 import { motion, AnimatePresence } from "framer-motion";
 import { Eye, EyeOff, Mail, Lock, User, ArrowRight } from "lucide-react";
+import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 
 type Mode = "login" | "register" | "forgot-password" | "reset-sent" | "verification-sent";
 
@@ -19,6 +20,8 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
 };
 
 export default function Login({ api }: any) {
+  const { executeRecaptcha } = useGoogleReCaptcha();
+
   const queryClient = useQueryClient();
   const [mode, setMode] = useState<Mode>("login");
   const [name, setName] = useState("");
@@ -54,6 +57,13 @@ export default function Login({ api }: any) {
 
   const loginFunction = async (email: string, password: string) => {
     try {
+
+      if (!executeRecaptcha) {
+        setError("reCAPTCHA unavailable.")
+        return;
+      }
+
+      const rcpToken = await executeRecaptcha("login");
       const res = await queryClient.fetchQuery({
         queryKey: ["login"],
         queryFn: async () => {
@@ -62,6 +72,7 @@ export default function Login({ api }: any) {
             {
               email: email,
               password: password,
+              rcpToken
             },
             {
               withCredentials: true,
@@ -79,6 +90,8 @@ export default function Login({ api }: any) {
         setError("Invalid credentials");
       } else if (wtaError === "USER_NOT_FOUND") {
         setError("User not found");
+      } else if (wtaError === "RECAPTCHA_FAIL") {
+        setError("Browser verification failed. Please refresh the page and try again.");
       } else {
         setError("An unexpected error occurred");
       }
@@ -91,6 +104,13 @@ export default function Login({ api }: any) {
     password: string
   ) => {
     try {
+      if (!executeRecaptcha) {
+        setError("reCAPTCHA unavailable.")
+        return;
+      }
+
+      const rcpToken = await executeRecaptcha("register");
+
       const res = await queryClient.fetchQuery({
         queryKey: ["register"],
         queryFn: async () => {
@@ -100,6 +120,7 @@ export default function Login({ api }: any) {
               name: name,
               email: email,
               password: password,
+              rcpToken
             },
             {
               withCredentials: true,
@@ -116,6 +137,8 @@ export default function Login({ api }: any) {
       const wtaError = handleAxiosError(e as AxiosError);
       if (wtaError === "USER_ALREADY_EXISTS") {
         setError("User already exists");
+      } else if (wtaError === "RECAPTCHA_FAIL") {
+        setError("Browser verification failed. Please refresh the page and try again.");
       } else {
         setError("An unexpected error occurred");
       }
@@ -199,6 +222,13 @@ export default function Login({ api }: any) {
     setError(null);
 
     try {
+      if (!executeRecaptcha) {
+        setError("reCAPTCHA unavailable.")
+        return;
+      }
+
+      const rcpToken = await executeRecaptcha("register");
+
       await queryClient.fetchQuery({
         queryKey: ["forgot-password"],
         queryFn: async () => {
@@ -206,6 +236,7 @@ export default function Login({ api }: any) {
             `${api}/forgot-password`,
             {
               email: email,
+              rcpToken,
             },
           );
           return "";
@@ -218,6 +249,8 @@ export default function Login({ api }: any) {
       const wtaError = handleAxiosError(e as AxiosError);
       if (wtaError === "USER_NOT_FOUND") {
         setError("No account found with this email address");
+      } else if (wtaError === "RECAPTCHA_FAIL") {
+        setError("Browser verification failed. Please refresh the page and try again.");
       } else {
         setError("Something went wrong. Please try again.");
       }

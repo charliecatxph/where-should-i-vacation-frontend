@@ -14,7 +14,8 @@ export type serverErrorCodes =
   | "RAN_OUT_OF_CREDITS"
   | "INVALID_CREDENTIALS"
   | "USER_NOT_FOUND"
-  | "USER_ALREADY_EXISTS";
+  | "USER_ALREADY_EXISTS"
+  | "RECAPTCHA_FAIL";
 
 export function handleAxiosError(error: AxiosError): serverErrorCodes {
   const axiosError = error as AxiosError;

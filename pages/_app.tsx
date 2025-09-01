@@ -10,6 +10,7 @@ import { ModalProvider, useModal } from "@/components/modals/ModalContext";
 import Modal from "@/components/modals/Modal";
 import { useState } from "react";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
+import { GoogleReCaptchaProvider } from "react-google-recaptcha-v3";
 export default function App({ Component, pageProps }: AppProps) {
   const [queryClient] = useState(() => new QueryClient());
   return (
@@ -18,7 +19,9 @@ export default function App({ Component, pageProps }: AppProps) {
         <MantineProvider>
           <Provider store={store}>
             <ModalProvider>
-              <Component {...pageProps} />
+              <GoogleReCaptchaProvider reCaptchaKey="6LfSKLorAAAAALqaEjIbQO3q0l8xBErGvMKFdUqu">
+                <Component {...pageProps} />
+              </GoogleReCaptchaProvider>
               <Modal />
               <ReactQueryDevtools />
             </ModalProvider>
