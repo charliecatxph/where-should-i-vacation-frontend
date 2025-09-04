@@ -491,6 +491,7 @@ export default function Home({ user, api }: any) {
                           <span className="max-[400px]:hidden">
                             Itinerary Builder
                           </span>
+                          {activeTab === "itinerary-builder" && <span className="bg-yellow-600 px-5 rounded-full text-xs text-yellow-50 py-1">BETA</span>}
                         </span>
                       </button>
                     </li>
@@ -992,7 +993,7 @@ export default function Home({ user, api }: any) {
                 ABOUT US
               </h1>
               <p
-                className={`text-neutral-600 text-center text-4xl ${geist.className} leading-[50px] mt-5`}
+                className={`text-neutral-600 text-center text-4xl ${geist.className} leading-[50px] mt-5 max-[600px]:text-3xl max-[600px]:leading-[40px]`}
               >
                 Discover{" "}
                 <span className="text-black">your perfect vacation</span> with

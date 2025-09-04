@@ -23,10 +23,10 @@ export default function Footer() {
               <div className="flex flex-col gap-1 text-sm">
                 <span className="font-semibold mb-1">Contact Us</span>
                 <a
-                  href="mailto:hello@whereshouldivacation.com"
+                  href="mailto:info@whereshouldivacation.com"
                   className="hover:text-orange-600 transition"
                 >
-                  hello@whereshouldivacation.com
+                  info@whereshouldivacation.com
                 </a>
               </div>
             </div>
@@ -40,9 +40,10 @@ export default function Footer() {
               rights reserved.
             </span>
             <span className="text-right max-[800px]:text-xs">
-              Developed by CTX Softwares Philippines.
+              Developed by CTX Softwares Philippines
             </span>
           </div>
+
           <div className="wrapper flex saturate-0 items-center gap-3 mt-10">
             <div className="attrib">
               <img

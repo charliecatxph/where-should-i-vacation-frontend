@@ -1,6 +1,8 @@
 @import "tailwindcss";
 
-
+.grecaptcha-badge {
+  visibility: hidden;
+}
 
 body {
   background: #fafafa;

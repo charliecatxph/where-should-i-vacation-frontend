@@ -145,7 +145,7 @@ export default function PlaceShowcase({ placeData }: PlaceShowcaseParameters) {
                 </h2>
               </div>
               <p className="text-gray-700 text-lg leading-relaxed max-[600px]:text-sm">
-                {placeData.description}
+                {placeData?.description || ""}
               </p>
             </motion.div>
           )}
