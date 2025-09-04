@@ -36,7 +36,7 @@ export default function ItineraryAd() {
                 <span className="font-bold text-orange-600">you</span>. All you
                 have to do is show up.
               </p>
-              <Link href="/itinerary-builder">
+              <Link href="/?md=ib">
                 <button className="mt-6 bg-orange-600 hover:bg-orange-500  text-white py-2 px-8 rounded-lg shadow transition-colors duration-200">
                   <span className="font-[700]">Create An Itinerary</span>
                 </button>

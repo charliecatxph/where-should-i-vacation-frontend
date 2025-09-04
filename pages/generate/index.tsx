@@ -120,10 +120,10 @@ export default function Generate({ user, queries, api }: any) {
     queryKey: ["travel-recommendations", queries.uuid],
     queryFn: async () => {
       const params = new URLSearchParams({
-        uuid: parameters.uuid,
-        what: parameters.what,
-        where: parameters.where,
-        when: parameters.when,
+        uuid: queries.uuid,
+        what: queries.what,
+        where: queries.where,
+        when: queries.when,
       });
       const res = await axios.get(
         `${api}/get-travel-recommendations?${params.toString()}`,
@@ -184,20 +184,6 @@ export default function Generate({ user, queries, api }: any) {
   const interpretationWords = travelRecommendations?.interpretation
     ? travelRecommendations.interpretation.split(" ")
     : [];
-
-  const containerVariants = {
-    hidden: {},
-    show: {
-      transition: {
-        staggerChildren: 0.04,
-      },
-    },
-  };
-
-  const wordVariants = {
-    hidden: { opacity: 0 },
-    show: { opacity: 1, transition: { duration: 0.05 } },
-  };
 
   const cardsContainerVariants = {
     hidden: {},
@@ -371,16 +357,16 @@ export default function Generate({ user, queries, api }: any) {
                     >
                       <h1 className="font-[500] text-lg">Trip Overview</h1>
                       <div className="cards flex gap-20 mt-5 max-[800px]:flex-col max-[800px]:gap-5">
-                        <div className="flex gap-5 items-center w-max">
+                        <div className="flex gap-5 items-center">
                           <MapPin size={18} />
                           <div>
-                            <p className="text-neutral-600 text-sm">
+                            <p className="text-neutral-600">
                               Destination
                             </p>
-                            <p>{parameters?.where}</p>
+                            <p className="break-all">{parameters?.where}</p>
                           </div>
                         </div>
-                        <div className="flex gap-5 items-center w-max">
+                        <div className="flex gap-5 items-center">
                           <Calendar size={18} />
                           <div>
                             <p className="text-neutral-600 text-sm">Dates</p>

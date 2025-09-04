@@ -44,8 +44,8 @@ export default function Footer() {
             </span>
           </div>
 
-          <div className="wrapper flex saturate-0 items-center gap-3 mt-10">
-            <div className="attrib">
+          <div className="hidden wrapper flex saturate-0 items-center gap-3 mt-10">
+            {/* <div className="attrib">
               <img
                 src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/OpenAI_Logo.svg/1024px-OpenAI_Logo.svg.png"
                 alt="OpenAI"
@@ -58,7 +58,7 @@ export default function Footer() {
                 alt="GCP"
                 className="w-[100px] h-[50px]"
               />
-            </div>
+            </div> */}
             {/* <div className="attrib">
               <img
                 src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Amadeus_%28CRS%29_Logo.svg/1200px-Amadeus_%28CRS%29_Logo.svg.png"
@@ -66,13 +66,13 @@ export default function Footer() {
                 className="w-[100px]"
               />
             </div> */}
-            <div className="attrib">
+            {/* <div className="attrib">
               <img
                 src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Aviasales_logo.png/1024px-Aviasales_logo.png"
                 alt="Aviasales"
                 className="w-[100px]"
               />
-            </div>
+            </div> */}
             {/* <div className="attrib">
               <img
                 src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Kayak_Logo.svg/2560px-Kayak_Logo.svg.png"

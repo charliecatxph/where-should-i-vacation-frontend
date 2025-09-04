@@ -52,7 +52,7 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   return udc;
 };
 
-export default function Home({ user, api }: any) {
+export default function Home({ user, api, queries }: any) {
   const router = useRouter();
   const dispatch = useDispatch();
   const userData = useSelector(selectUserData);
@@ -184,6 +184,15 @@ export default function Home({ user, api }: any) {
     });
     return res.data.suggestions;
   };
+
+  useEffect(() => {
+    if (!queries?.md) return;
+    if (queries.md === "ib") {
+      setActiveTab("itinerary-builder");
+    } else {
+      setActiveTab("smart-search");
+    }
+  }, [queries?.md])
 
   useEffect(() => {
     let isMounted = true;
