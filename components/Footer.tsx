@@ -6,7 +6,7 @@ export default function Footer() {
   return (
     <>
       <footer
-        className={`${inter.className} bg-neutral-50 w-full border-t border-neutral-200 pt-10 pb-4 text-neutral-700 px-5`}
+        className={`${inter.className} bg-neutral-50 w-full border-t border-neutral-200 pt-10 pb-4 text-neutral-700 px-5 bg-white`}
       >
         <div className="ctx-container">
           <div className="wrapper grid grid-cols-1 md:grid-cols-2 gap-8 items-start pb-6">
