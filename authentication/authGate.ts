@@ -5,11 +5,8 @@ import { parse } from "cookie";
 
 const redirectIfLoggedIn = ["/login", "/finish-google-sso"];
 const protectedRoutes = [
-  "/generate",
-  "/generate-itinerary",
   "/history",
   "/itinerary-history",
-  "/vacation",
 ];
 
 const stripe = ["/purchase-success"];
@@ -82,7 +79,6 @@ export const authGate = async (ctx: GetServerSidePropsContext) => {
       },
     };
   } catch (e) {
-    console.log(e);
     if (protectedRoutes.some((route) => route === resolvedUrl)) {
       return {
         redirect: {

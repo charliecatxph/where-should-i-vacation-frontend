@@ -54,6 +54,9 @@ const Modal = () => {
             {openModal === "creditError" && (
               <ErrorCredits onClose={closeModal} router={router} />
             )}
+             {openModal === "creditErrorNtl" && (
+              <ErrorCreditsNtl onClose={closeModal} router={router} />
+            )}
             {openModal === "serverError" && (
               <ErrorOffline onClose={closeModal} router={router} />
             )}
@@ -97,6 +100,54 @@ const ErrorIncomplete = ({ onClose, router }: any) => (
         >
           <ArrowRight className="mr-2 h-4 w-4" strokeWidth={3} />
           <span className="font-semibold">Go to Generation Page</span>
+        </button>
+      </div>
+    </div>
+  </div>
+);
+
+const ErrorCreditsNtl = ({ onClose, router }: any) => (
+  <div className="w-full max-w-md mx-auto bg-white border border-gray-200 rounded-lg shadow-md">
+    <div className="text-center p-6 pb-4">
+      <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
+        <CreditCard className="h-8 w-8 text-red-600" />
+      </div>
+      <h2 className="text-xl font-semibold text-gray-900">Out of Credits</h2>
+      <p className="text-base text-gray-600 mt-2">
+        You've used all your free credits and your network has been limited. Sign in to get the full experience.
+      </p>
+    </div>
+    <div className="px-6 pb-6 space-y-4">
+      <div className="rounded-lg bg-red-50 p-4 border border-red-200">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-sm  text-red-800">Current Balance</span>
+          <span className="text-xs px-2 py-1 rounded bg-red-600 text-white">
+            0 Credits
+          </span>
+        </div>
+        <p className="text-sm text-red-700">
+          Free Mode
+        </p>
+      </div>
+      <div className="flex flex-col gap-2">
+        <button
+          onClick={() => {
+            onClose();
+            router.push("/login");
+          }}
+          className="w-full bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded inline-flex items-center justify-center"
+        >
+          <ArrowRight className="mr-2 h-4 w-4" strokeWidth={2} />
+          <span className="font-semibold">Sign In</span>
+        </button>
+        <button
+          onClick={() => {
+            onClose();
+            router.push("/");
+          }}
+          className="w-full border border-gray-300 hover:bg-gray-100 text-gray-800  py-2 px-4 rounded"
+        >
+          <span className="font-semibold">Go to Homepage</span>
         </button>
       </div>
     </div>

@@ -94,6 +94,7 @@ export default function Vacation({ user, queries, api }: any) {
   const dispatch = useDispatch();
   const userData = useSelector(selectUserData);
   const router = useRouter();
+  const { ref: tmpReferrer} = router.query;
 
   // ---- USER DATA REDUX CONDITIONAL ---
   const userData__final = isUserDataComplete(userData) ? userData : user;
@@ -116,7 +117,8 @@ export default function Vacation({ user, queries, api }: any) {
 
       const res = await axios.get(`${api}/view-place?${params.toString()}`, {
         headers: {
-          Authorization: `Bearer ${userData__final.token}`,
+          Authorization: `Bearer ${userData__final?.token || ""}`,
+          "X-Wta-Temporary-Referrer": tmpReferrer || null
         },
         withCredentials: true,
         timeout: 30000,
@@ -124,7 +126,7 @@ export default function Vacation({ user, queries, api }: any) {
 
       return res.data.place;
     },
-    enabled: Boolean(queries.place && userData__final.token),
+    enabled: Boolean(queries.place),
     retry: 1,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
@@ -152,7 +154,8 @@ export default function Vacation({ user, queries, api }: any) {
         `${api}/get-place-hotels?${params.toString()}`,
         {
           headers: {
-            Authorization: `Bearer ${userData.token}`,
+            Authorization: `Bearer ${userData?.token || ""}`,
+            "X-Wta-Temporary-Referrer": tmpReferrer || ""
           },
           withCredentials: true,
           timeout: 3 * 60 * 1000,
@@ -163,8 +166,8 @@ export default function Vacation({ user, queries, api }: any) {
     },
     enabled: Boolean(
       placeData?.location?.latitude &&
-      placeData?.location?.longitude &&
-      userData.token
+      placeData?.location?.longitude 
+
     ),
     retry: 1,
     refetchOnWindowFocus: false,
@@ -177,7 +180,7 @@ export default function Vacation({ user, queries, api }: any) {
 
     const wtaError = handleAxiosError(placeError as AxiosError);
 
-    if (["PLACE_NOT_EXIST"].includes(wtaError)) {
+    if (["PLACE_NOT_EXIST", "NTL_UNAUTH"].includes(wtaError)) {
       router.push("/");
     }
   }, [placeError]);

@@ -1,12 +1,13 @@
 import React, { createContext, useContext, useState, ReactNode } from "react";
 
-type ModalType = "parameterError" | "creditError" | "serverError" | null;
+type ModalType = "parameterError" | "creditError" | "serverError" | "creditErrorNtl" | null;
 
 interface ModalContextType {
   openModal: ModalType;
   showParameterError: () => void;
   showCreditError: () => void;
   showServerError: () => void;
+  showNtlCreditError: () => void;
   closeModal: () => void;
 }
 
@@ -25,6 +26,7 @@ export const ModalProvider = ({ children }: { children: ReactNode }) => {
 
   const showParameterError = () => setOpenModal("parameterError");
   const showCreditError = () => setOpenModal("creditError");
+  const showNtlCreditError = () => setOpenModal("creditErrorNtl");
   const showServerError = () => setOpenModal("serverError");
   const closeModal = () => setOpenModal(null);
 
@@ -36,6 +38,7 @@ export const ModalProvider = ({ children }: { children: ReactNode }) => {
         showCreditError,
         showServerError,
         closeModal,
+        showNtlCreditError
       }}
     >
       {children}

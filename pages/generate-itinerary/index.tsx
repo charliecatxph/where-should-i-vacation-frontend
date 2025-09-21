@@ -284,7 +284,7 @@ const ItineraryLoadingSkeleton = ({ isLoading, isSuccess }: {
 };
 
 export default function GenerateItinerary({ user, queries, api }: any) {
-  const { showParameterError, showCreditError } = useModal();
+  const { showParameterError, showCreditError, showNtlCreditError } = useModal();
   const router = useRouter();
   const dispatch = useDispatch();
   const userData = useSelector(selectUserData);
@@ -329,7 +329,7 @@ export default function GenerateItinerary({ user, queries, api }: any) {
 
   const navButtons = [
     { name: "Generation", route: "/" },
-    { name: "Itinerary History", route: "/itinerary-history" },
+    ...(user ? [{ name: "Itinerary History", route: "/itinerary-history" }] : []),
   ];
 
   const {
@@ -352,7 +352,7 @@ export default function GenerateItinerary({ user, queries, api }: any) {
         `${api}/generate-itinerary?${params.toString()}`,
         {
           headers: {
-            Authorization: `Bearer ${user.token}`,
+            Authorization: `Bearer ${user?.token || ""}`,
           },
           withCredentials: true,
         }
@@ -375,7 +375,7 @@ export default function GenerateItinerary({ user, queries, api }: any) {
     refetchOnWindowFocus: false,
     staleTime: 60 * 60 * 1000,
     retry: 1,
-    enabled: Boolean(queries.uuid && user.token),
+    enabled: Boolean(queries.uuid),
   });
 
   useEffect(() => {
@@ -399,6 +399,11 @@ export default function GenerateItinerary({ user, queries, api }: any) {
 
     if (wtaError === "RAN_OUT_OF_CREDITS") {
       showCreditError();
+      return;
+    }
+
+    if (wtaError === "NTL_USR_RAN_OUT_OF_CREDITS") {
+      showNtlCreditError();
       return;
     }
   }, [error]);
@@ -459,7 +464,7 @@ export default function GenerateItinerary({ user, queries, api }: any) {
         `${api}/get-place-hotels?lat=${centralPoint?.latitude}&lng=${centralPoint?.longitude}`,
         {
           headers: {
-            Authorization: `Bearer ${user.token}`,
+            Authorization: `Bearer ${user?.token || ""}`,
           },
         }
       );
@@ -473,7 +478,6 @@ export default function GenerateItinerary({ user, queries, api }: any) {
     retry: 1,
     enabled: Boolean(
       queries.uuid &&
-      user.token &&
       centralPoint?.latitude &&
       centralPoint.longitude
     ),
@@ -755,8 +759,9 @@ export default function GenerateItinerary({ user, queries, api }: any) {
                                     </span>
                                   )}
                                 </div>
-                                <div className="p-4 flex flex-col gap-2">
-                                  <div className="flex items-start justify-between gap-2">
+                                <div className="p-4 flex flex-col h-full justify-between">
+                                 <div className="flex-col gap-2 flex">
+                                 <div className="flex items-start justify-between gap-2">
                                     <div>
                                       <p className="font-semibold leading-tight">
                                         {activity.displayName?.text ??
@@ -784,6 +789,21 @@ export default function GenerateItinerary({ user, queries, api }: any) {
                                       Suggested: {activity.userAction}
                                     </p>
                                   )}
+                                 </div>
+                                  <div className="mt-4 pt-3 border-t border-gray-100">
+                                    <a 
+                                      href={`https://www.google.com/maps/place/?q=place_id:${activity.id}`}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="inline-flex items-center justify-center w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-medium py-2.5 px-4 rounded-lg hover:bg-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-1"
+                                    >
+                                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                      </svg>
+                                      <span className="text-sm">View on Google Maps</span>
+                                    </a>
+                                  </div>
                                 </div>
                               </motion.div>
                             );

@@ -75,7 +75,7 @@ export interface TravelRecommendations {
 }
 
 export default function Generate({ user, queries, api }: any) {
-  const { showParameterError, showCreditError } = useModal();
+  const { showParameterError, showCreditError, showNtlCreditError } = useModal();
   const dispatch = useDispatch();
   const userData = useSelector(selectUserData);
 
@@ -115,7 +115,8 @@ export default function Generate({ user, queries, api }: any) {
   const {
     data: travelRecommendations,
     error: travelRecommendationsError,
-    isFetching,
+    isPending,
+    isError,
   } = useQuery({
     queryKey: ["travel-recommendations", queries.uuid],
     queryFn: async () => {
@@ -129,7 +130,7 @@ export default function Generate({ user, queries, api }: any) {
         `${api}/get-travel-recommendations?${params.toString()}`,
         {
           headers: {
-            Authorization: `Bearer ${user.token}`,
+            Authorization: `Bearer ${user?.token || ""}`,
           },
           withCredentials: true,
           timeout: 120000,
@@ -153,7 +154,7 @@ export default function Generate({ user, queries, api }: any) {
     refetchOnWindowFocus: false,
     staleTime: 60 * 60 * 1000,
     retry: 1,
-    enabled: Boolean(queries.uuid && user.token),
+    enabled: Boolean(queries.uuid),
   });
 
   useEffect(() => {
@@ -177,6 +178,11 @@ export default function Generate({ user, queries, api }: any) {
 
     if (wtaError === "RAN_OUT_OF_CREDITS") {
       showCreditError();
+      return;
+    }
+
+    if (wtaError === "NTL_USR_RAN_OUT_OF_CREDITS") {
+      showNtlCreditError();
       return;
     }
   }, [travelRecommendationsError]);
@@ -222,8 +228,12 @@ export default function Generate({ user, queries, api }: any) {
   }, [travelRecommendations?.interpretation]);
 
   const navButtons = [
-    { name: "Add Credits", route: "/#pricing" },
-    { name: "Generation History", route: "/history" },
+    ...(user
+      ? [
+          { name: "Add Credits", route: "/#pricing" },
+          { name: "Generation History", route: "/history" },
+        ]
+      : []),
   ];
 
   // --- SKELETONS FOR AI SUMMARY ---
@@ -318,21 +328,22 @@ export default function Generate({ user, queries, api }: any) {
           <div className="ctx-container">
             <div className="wrapper mt-10 px-5">
               <h1 className="font-[600] text-2xl">
-                {isFetching ? (
+                {(isPending || isError) ? (
                   <span className="h-7 w-1/2 rounded loading-skeleton inline-block" />
                 ) : (
                   travelRecommendations?.title
                 )}
               </h1>
               <p className="mt-1 font-[300] text-lg">
-                {isFetching ? (
+                {(isPending || isError) ? (
                   <span className="h-5 w-2/3 rounded loading-skeleton inline-block" />
                 ) : (
                   travelRecommendations?.interpretation
                 )}
               </p>
+             
               <div className={`grid max-[800px]:grid-cols-1  grid-cols-2 mt-5 gap-5 ${geist.className}`}>
-                {isFetching ? (
+                {(isPending || isError) ? (
                   <>
                     <div className="col-span-2 max-[800px]:col-span-1">
                       <TripOverviewSkeleton />
@@ -519,6 +530,7 @@ export default function Generate({ user, queries, api }: any) {
                     ))
                     : travelRecommendations.places.map(
                       (place: RecommendedPlace, i: number) => {
+                        console.log(travelRecommendations)
                         return (
                           <motion.div key={i} variants={cardVariants}>
                             <PlaceCard
@@ -533,6 +545,7 @@ export default function Generate({ user, queries, api }: any) {
                               location={place.formattedAddress}
                               mapsUrl={`https://www.google.com/maps/place/?q=place_id:${place.id}`}
                               placeUrl="https://www.example.com/alps-lodge"
+                              tmpReferrer={travelRecommendations?.tmpReferrer || null}
                             />
                           </motion.div>
                         );
