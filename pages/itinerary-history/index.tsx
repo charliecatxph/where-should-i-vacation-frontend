@@ -191,7 +191,7 @@ export default function History({ user, api }: any) {
                       key={i}
                       generation={generation}
                       onClick={() =>
-                        router.push(`/generate-itinerary?uuid=${generation.id}`)
+                        router.push(`/generate-itinerary?uuid=${generation.id}&rf=true`)
                       }
                     />
                   ))}

@@ -10,16 +10,34 @@ import { useQuery } from "@tanstack/react-query";
 import axios, { AxiosError } from "axios";
 import { GetServerSidePropsContext } from "next";
 import { useRouter } from "next/router";
-import { useEffect, useMemo, useState } from "react";
+import {
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { CircularProgress } from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion";
 import Footer from "@/components/Footer";
-import { ArrowUpRight, Cloud, Lightbulb, MapPin, Share, Thermometer, Wind } from "lucide-react";
+import { AdvancedMarker, APIProvider, Map, MapCameraChangedEvent, MapCameraProps } from "@vis.gl/react-google-maps";
+import CustomCTXMapPinGMAPS from "@/components/CustomCTXMapPinGMAPS";
+import {
+  ArrowUpRight,
+  Cloud,
+  Lightbulb,
+  MapPin,
+  Share,
+  Thermometer,
+  Wind,
+} from "lucide-react";
 import AviasalesCard from "@/components/vacation/AviasalesCard";
 import { handleAxiosError } from "@/functions/handleAxiosError";
 import { useModal } from "@/components/modals/ModalContext";
-import Link from "next/link"
+import Link from "next/link";
 import Head from "next/head";
 
 export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
@@ -62,15 +80,21 @@ const getSphericalCenter = (coords: Coordinate[]): Coordinate => {
 };
 
 // Beautiful loading skeleton component with progress indicators
-const ItineraryLoadingSkeleton = ({ isLoading, isSuccess }: {
+const ItineraryLoadingSkeleton = ({
+  isLoading,
+  isSuccess,
+  setFlag,
+  rf,
+}: {
   isLoading: boolean;
   isSuccess: boolean;
+  setFlag: Dispatch<SetStateAction<boolean>>;
+  rf: boolean;
 }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [progress, setProgress] = useState(0);
-  const [showResults, setShowResults] = useState(false);
 
-  const steps = [
+  const newGen = [
     { text: "Analyzing your preferences...", duration: 20000 },
     { text: "Finding the perfect locations...", duration: 35000 },
     { text: "Curating unique experiences...", duration: 30000 },
@@ -79,22 +103,28 @@ const ItineraryLoadingSkeleton = ({ isLoading, isSuccess }: {
     { text: "Adding final touches...", duration: 30000 },
   ];
 
+  const oldGen = [
+    { text: "Getting your itinerary ready...", duration: 20000 },
+    { text: "Almost there...", duration: 30000 },
+  ];
+
+  const steps = rf ? oldGen : newGen;
+
   useEffect(() => {
     if (!isLoading) return;
 
-    const totalDuration = 160000; // 2.67 minutes
+    const totalDuration = 160000;
     const stepDuration = totalDuration / steps.length;
 
-    // Progress animation - stop at 95% until real data arrives
     const progressInterval = setInterval(() => {
-      setProgress(prev => {
-        if (prev >= 95) return 95; // Stop at 95% until real data arrives
-        return prev + (95 / (totalDuration / 100));
+      setProgress((prev) => {
+        if (prev >= 95) return 95;
+        return prev + 95 / (totalDuration / 100);
       });
     }, 100);
 
     const stepInterval = setInterval(() => {
-      setCurrentStep(prev => {
+      setCurrentStep((prev) => {
         if (prev >= steps.length - 1) return steps.length - 1;
         return prev + 1;
       });
@@ -106,29 +136,24 @@ const ItineraryLoadingSkeleton = ({ isLoading, isSuccess }: {
     };
   }, [isLoading]);
 
-  // Jump to 100% when data arrives
   useEffect(() => {
     if (isSuccess && progress > 0) {
       setProgress(100);
       setCurrentStep(steps.length - 1);
-
-      // Pause briefly then hide skeleton and show results
       const timer = setTimeout(() => {
-        setShowResults(true);
-      }, 1500);
+        setFlag(true);
+      }, 1000);
 
       return () => clearTimeout(timer);
     }
   }, [isSuccess, progress]);
 
-  if (showResults) {
-    return null;
-  }
-
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
+      exit={{ opacity: 0, y: 20 }}
+      key={"loading-skeleton-new"}
       className="w-full py-8 max-[500px]:py-4"
     >
       {/* Header Skeleton */}
@@ -157,19 +182,14 @@ const ItineraryLoadingSkeleton = ({ isLoading, isSuccess }: {
           <div className="relative">
             <CircularProgress
               size={60}
-              thickness={3}
+              thickness={4}
               sx={{
-                color: '#ea580c',
-                '& .MuiCircularProgress-circle': {
-                  strokeLinecap: 'round',
-                }
+                color: "#ea580c",
+                "& .MuiCircularProgress-circle": {
+                  strokeLinecap: "round",
+                },
               }}
             />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-sm font-semibold text-orange-700 max-[500px]:text-xs">
-                {Math.round(progress)}%
-              </span>
-            </div>
           </div>
 
           <div className="text-center">
@@ -181,14 +201,31 @@ const ItineraryLoadingSkeleton = ({ isLoading, isSuccess }: {
             >
               {steps[currentStep]?.text}
             </motion.h3>
-            <p className="text-orange-600 text-sm max-[500px]:text-xs">
-              This usually takes about 2-3 minutes. Hang tight! ✨
-            </p>
-            <p className="text-orange-600 text-sm max-[500px]:text-xs">
-              Long itineraries take longer to create.
-            </p>
+            {!rf ? (
+              <>
+                <p className="text-orange-600 text-xs mt-2 flex gap-5 items-center max-[800px]:flex-col max-[800px]:gap-2 max-[500px]:text-xs">
+                  This usually takes about 2-3 minutes. Hang tight! ✨
+                </p>
+                <p className="text-orange-600 text-xs mt-2 flex gap-5 items-center max-[800px]:flex-col max-[800px]:gap-2 max-[500px]:text-xs">
+                  Long itineraries take longer to create.
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="text-orange-600 text-sm max-[500px]:text-xs">
+                  Please wait while we get your itinerary ready...
+                </p>
+              </>
+            )}
             <p className="text-orange-600 text-xs mt-2 flex gap-5 items-center max-[800px]:flex-col max-[800px]:gap-2 max-[500px]:text-xs">
-              Your itineraries can be viewed in <Link href="/itinerary-history"><span className="block px-5 py-2 bg-white rounded-lg text-black font-[500] flex items-center gap-2 max-[500px]:px-3 max-[500px]:py-1.5 max-[500px]:text-xs"><MapPin className="text-blue-600" size={15} />{" "}Itinerary History</span></Link>.
+              Your itineraries can be viewed in{" "}
+              <Link href="/itinerary-history">
+                <span className="block px-5 py-2 bg-white rounded-lg text-black font-[500] flex items-center gap-2 max-[500px]:px-3 max-[500px]:py-1.5 max-[500px]:text-xs">
+                  <MapPin className="text-blue-600" size={15} /> Itinerary
+                  History
+                </span>
+              </Link>
+              .
             </p>
           </div>
 
@@ -283,8 +320,22 @@ const ItineraryLoadingSkeleton = ({ isLoading, isSuccess }: {
   );
 };
 
+const sectionReveal = {
+  hidden: { opacity: 0, y: 12 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.25 } },
+};
+const listReveal = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.06 } },
+};
+const itemReveal = {
+  hidden: { opacity: 0, y: 16 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.25 } },
+};
+
 export default function GenerateItinerary({ user, queries, api }: any) {
-  const { showParameterError, showCreditError, showNtlCreditError } = useModal();
+  const { showParameterError, showCreditError, showNtlCreditError } =
+    useModal();
   const router = useRouter();
   const dispatch = useDispatch();
   const userData = useSelector(selectUserData);
@@ -329,7 +380,9 @@ export default function GenerateItinerary({ user, queries, api }: any) {
 
   const navButtons = [
     { name: "Generation", route: "/" },
-    ...(user ? [{ name: "Itinerary History", route: "/itinerary-history" }] : []),
+    ...(user
+      ? [{ name: "Itinerary History", route: "/itinerary-history" }]
+      : []),
   ];
 
   const {
@@ -363,10 +416,10 @@ export default function GenerateItinerary({ user, queries, api }: any) {
       }
 
       if (res.data?.cached) {
-        setParameters(pv => ({
+        setParameters((pv) => ({
           ...pv,
-          ...res.data.itinerary.userQuery
-        }))
+          ...res.data.itinerary.userQuery,
+        }));
       }
       return res.data.itinerary?.[0] ?? res.data.itinerary;
     },
@@ -419,20 +472,117 @@ export default function GenerateItinerary({ user, queries, api }: any) {
     return schedule[selectedDayIndex] ?? null;
   }, [itineraryData, selectedDayIndex]);
 
-  const sectionReveal = {
-    hidden: { opacity: 0, y: 12 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.25 } },
-  };
-  const listReveal = {
-    hidden: {},
-    show: { transition: { staggerChildren: 0.06 } },
-  };
-  const itemReveal = {
-    hidden: { opacity: 0, y: 16 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.25 } },
-  };
-
   const [centralPoint, setCentralPoint] = useState<Coordinate>();
+  const [centralPointMaps, setCentralPointMaps] = useState<Coordinate>();
+  const mapContainerRef = useRef<HTMLDivElement | null>(null);
+
+  // Compute POIs for the selected day
+  const selectedDayPois: Coordinate[] = useMemo(() => {
+    if (!itineraryData) return [];
+    const day = itineraryData.schedule?.[selectedDayIndex];
+    if (!day) return [];
+    return day.activities.flatMap((activity: any) => {
+      if (!activity.location?.latitude || !activity.location?.longitude)
+        return [];
+      return [
+        {
+          latitude: activity.location.latitude,
+          longitude: activity.location.longitude,
+        },
+      ];
+    });
+  }, [itineraryData, selectedDayIndex]);
+
+  // Calculate optimal integer zoom level from POI spread and container size
+  const [optimalZoom, setOptimalZoom] = useState<number>(10);
+
+  function clamp(n: number, min: number, max: number) {
+    return Math.max(min, Math.min(max, n));
+  }
+
+  function latToMercatorY(latDeg: number) {
+    const latRad = (latDeg * Math.PI) / 180;
+    return Math.log(Math.tan(Math.PI / 4 + latRad / 2));
+  }
+
+  function computeZoomFromBounds(
+    pois: Coordinate[],
+    widthPx: number,
+    heightPx: number
+  ) {
+    if (!pois || pois.length === 0) return 10;
+    if (pois.length === 1) return 15;
+
+    const lats = pois.map((p) => p.latitude);
+    const lngs = pois.map((p) => p.longitude);
+    const minLat = Math.min(...lats);
+    const maxLat = Math.max(...lats);
+    const minLng = Math.min(...lngs);
+    const maxLng = Math.max(...lngs);
+
+    let lonDelta = maxLng - minLng; // degrees
+    if (lonDelta < 0) lonDelta += 360;
+    if (lonDelta > 180) lonDelta = 360 - lonDelta; // antimeridian
+
+    const mercMinY = latToMercatorY(minLat);
+    const mercMaxY = latToMercatorY(maxLat);
+    const latDeltaMerc = Math.abs(mercMaxY - mercMinY);
+
+    const TILE_SIZE = 256;
+    const zoomLng =
+      lonDelta > 0 ? Math.log2((widthPx * 360) / (TILE_SIZE * lonDelta)) : 21;
+    const zoomLat =
+      latDeltaMerc > 0
+        ? Math.log2((heightPx * 2 * Math.PI) / (TILE_SIZE * latDeltaMerc))
+        : 21;
+
+    const zoom = Math.floor(clamp(Math.min(zoomLng, zoomLat) - 0.5, 2, 21));
+    return Number.isFinite(zoom) ? zoom : 10;
+  }
+
+  useEffect(() => {
+    const container = mapContainerRef.current;
+    const width =
+      container?.clientWidth ||
+      Math.max(
+        300,
+        Math.floor(
+          (typeof window !== "undefined" ? window.innerWidth : 1200) / 2
+        )
+      );
+    const height =
+      container?.clientHeight ||
+      (typeof window !== "undefined" ? window.innerHeight : 800);
+    const nextZoom = computeZoomFromBounds(selectedDayPois, width, height);
+    setOptimalZoom(nextZoom);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    selectedDayPois.length,
+    centralPointMaps?.latitude,
+    centralPointMaps?.longitude,
+  ]);
+
+  // Track container resize to recompute zoom
+  useEffect(() => {
+    const el = mapContainerRef.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const cr = entry.contentRect as DOMRectReadOnly;
+        const nextZoom = computeZoomFromBounds(
+          selectedDayPois,
+          Math.max(300, cr.width),
+          Math.max(300, cr.height)
+        );
+        setOptimalZoom(nextZoom);
+      }
+    });
+    ro.observe(el);
+    return () => {
+      ro.disconnect();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mapContainerRef.current, selectedDayPois.length]);
 
   useEffect(() => {
     if (!itineraryData) return;
@@ -451,6 +601,13 @@ export default function GenerateItinerary({ user, queries, api }: any) {
     );
     setCentralPoint(getSphericalCenter(pois));
   }, [itineraryData]);
+
+  useEffect(() => {
+    if (!itineraryData) return;
+    setCentralPointMaps(
+      selectedDayPois.length ? getSphericalCenter(selectedDayPois) : undefined
+    );
+  }, [selectedDayIndex, itineraryData, selectedDayPois]);
 
   const {
     data: hotelsData,
@@ -477,9 +634,7 @@ export default function GenerateItinerary({ user, queries, api }: any) {
     staleTime: 60 * 60 * 1000,
     retry: 1,
     enabled: Boolean(
-      queries.uuid &&
-      centralPoint?.latitude &&
-      centralPoint.longitude
+      queries.uuid && centralPoint?.latitude && centralPoint.longitude
     ),
   });
 
@@ -488,6 +643,25 @@ export default function GenerateItinerary({ user, queries, api }: any) {
     const hue = 120 - 120 * (value / 5); // 120 (green) to 0 (red)
     return `hsl(${hue}, 80%, 45%)`;
   }
+
+  const [showResults, setShowResults] = useState(false);
+
+  const [camProps, setCamProps] = useState<MapCameraProps>();
+  const handleCamChange = useCallback((ev: MapCameraChangedEvent) => 
+    setCamProps(ev.detail)
+  , [])
+
+  useEffect(() => {
+    if (!centralPointMaps || !optimalZoom) return;
+    setCamProps({
+      center: {
+        lat: centralPointMaps.latitude,
+        lng: centralPointMaps.longitude,
+      },
+      zoom: optimalZoom,
+    });
+  }, [optimalZoom, centralPointMaps])
+
 
   return (
     <>
@@ -501,17 +675,83 @@ export default function GenerateItinerary({ user, queries, api }: any) {
           navButtons={navButtons}
           api={api}
         />
-        <section className="py-6">
-          <div className="ctx-container">
-            <div className="wrapper px-5">
-              {/* Loading - only show if loading and no cached data */}
-              {isLoading && !itineraryData && (
-                <ItineraryLoadingSkeleton
-                  isLoading={isLoading}
-                  isSuccess={isSuccess}
-
-                />
+        <section className="">
+          <div className="grid grid-cols-2">
+            <div className="maps relative" ref={mapContainerRef}>
+              {showResults && camProps && (
+                <APIProvider apiKey={"AIzaSyD1X2K5JemighniA_ZhJoa_igthTlKJcmI"}>
+                  <Map
+                    style={{ width: "100%", height: "100vh", position: "sticky", top: 0 }}
+                    {...camProps}
+                    controlled={false}
+                    gestureHandling="greedy"
+                    disableDefaultUI
+                    mapId={"itinerary-map"}
+                    reuseMaps
+                    onCameraChanged={handleCamChange}
+                  >
+                    {selectedDay?.activities.map((activity: any, i: number) => {
+                      {console.log(activity)}
+                      return (
+                        <AdvancedMarker
+                          key={activity.displayName?.text || i}
+                          position={{
+                            lat: activity.location.latitude,
+                            lng: activity.location.longitude,
+                          }}
+                          title={activity.displayName?.text}
+                        >
+                          <CustomCTXMapPinGMAPS activity={activity} type={"ACTIVITY"} />
+                        </AdvancedMarker>
+                      );
+                    })}
+                    {hotelsData?.map((hotel: any, i: number) => {
+                      return (
+                        <AdvancedMarker
+                          key={hotel.displayName || i}
+                          position={{
+                            lat: hotel.location.latitude,
+                            lng: hotel.location.longitude,
+                          }}
+                          title={hotel.displayName}
+                        >
+                          <CustomCTXMapPinGMAPS activity={{
+                            ...hotel,
+                            displayName: {
+                              text: hotel?.displayName
+                            }
+                          }} type={"HOTEL"} />
+                        </AdvancedMarker>
+                      );
+                    })}
+                  </Map>
+                </APIProvider>
               )}
+              <AnimatePresence>
+                {hotelsInitializing && <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              key={"Map-Hotels-Initializer"}
+              transition={{ duration: 0.2 }}
+              className="absolute bg-white z-[1] shadow-sm top-10 right-10 flex items-center gap-2 px-5 py-2 rounded-full ">
+                <CircularProgress sx={{ color: "orange" }} size={20} thickness={5} disableShrink/>
+                <p className="font-[600] tracking-tight text-sm">Getting hotels...</p>
+              </motion.div>}
+              </AnimatePresence>
+            </div>
+            <div className="wrapper px-10 py-5">
+              {/* Loading - only show if loading and no cached data */}
+              <AnimatePresence>
+                {!showResults && (
+                  <ItineraryLoadingSkeleton
+                    isLoading={isLoading}
+                    isSuccess={isSuccess}
+                    setFlag={setShowResults}
+                    rf={Boolean(queries?.rf)}
+                  />
+                )}
+              </AnimatePresence>
 
               {/* Error */}
               {isError && (
@@ -529,7 +769,7 @@ export default function GenerateItinerary({ user, queries, api }: any) {
               )}
 
               {/* Content */}
-              {isSuccess && itineraryData && (
+              {showResults && (
                 <motion.div
                   className="flex flex-col gap-6"
                   variants={listReveal}
@@ -565,17 +805,47 @@ export default function GenerateItinerary({ user, queries, api }: any) {
                   >
                     <div className="flex items-start">
                       <div className="flex-shrink-0">
-                        <svg className="h-5 w-5 text-orange-400" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                        <svg
+                          className="h-5 w-5 text-orange-400"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                            clipRule="evenodd"
+                          />
                         </svg>
                       </div>
                       <div className="ml-3">
-                        <p className="text-sm font-medium">Beta Version</p>
+                        <p className="text-sm font-medium">
+                          You're using the Beta Version
+                        </p>
                         <p className="text-sm mt-1">
-                          This itinerary builder is currently in beta. If you encounter any issues, please contact us at{' '}
-                          <a href="mailto:info@whereshouldivacation.com" className="font-medium underline hover:text-orange-800">
+                          Thank you for trying out our itinerary builder! We're
+                          still in the early stages of development, and we're
+                          excited to have you along for the journey. Currently,
+                          the builder supports trip plans for up to{" "}
+                          <strong>7 days</strong>, and we’re working hard to
+                          make it even better.
+                          <br />
+                          <br />
+                          If you run into any issues, have suggestions, or just
+                          want to share your feedback, please don’t hesitate to
+                          contact us at{" "}
+                          <a
+                            href="mailto:info@whereshouldivacation.com"
+                            className="font-medium underline hover:text-orange-800"
+                          >
                             info@whereshouldivacation.com
                           </a>
+                          . Be sure to include your <strong>WSIV GenID</strong>{" "}
+                          provided below so we can better assist you. We’ll get
+                          back to you as soon as we can!
+                        </p>
+                        <br />
+                        <p className="text-sm mt-1">
+                          <strong>WSIV GenID:</strong> {queries.uuid}
                         </p>
                       </div>
                     </div>
@@ -599,10 +869,7 @@ export default function GenerateItinerary({ user, queries, api }: any) {
                               °C
                             </h1>{" "}
                             <div className="bg-orange-600 text-white text-center px-5 py-1 text-xs rounded-lg font-[500]">
-                              {
-                                itineraryData?.extras.expected_weather
-                                  .condition
-                              }
+                              {itineraryData?.extras.expected_weather.condition}
                             </div>
                           </div>
                           <div className="flex justify-between items-center">
@@ -616,19 +883,13 @@ export default function GenerateItinerary({ user, queries, api }: any) {
                             </p>{" "}
                             <p className="text-right text-neutral-600">
                               UV Index:{" "}
-                              {
-                                itineraryData?.extras.expected_weather
-                                  .uv_index
-                              }
+                              {itineraryData?.extras.expected_weather.uv_index}
                             </p>
                           </div>
                         </div>
                         <div className="grid grid-cols-2 max-[550px]:grid-cols-1 gap-5">
                           <p className="text-neutral-600 text-sm">
-                            {
-                              itineraryData?.extras.expected_weather
-                                .details
-                            }
+                            {itineraryData?.extras.expected_weather.details}
                           </p>
                           <div className="flex flex-col justify-center">
                             <p className="flex gap-3 items-center text-neutral-600 text-sm">
@@ -642,8 +903,8 @@ export default function GenerateItinerary({ user, queries, api }: any) {
                             <p className="flex gap-3 items-center text-neutral-600 text-sm">
                               <Wind size={18} />{" "}
                               {
-                                itineraryData?.extras.expected_weather
-                                  .wind.speed_kph
+                                itineraryData?.extras.expected_weather.wind
+                                  .speed_kph
                               }{" "}
                               kph
                             </p>
@@ -693,10 +954,11 @@ export default function GenerateItinerary({ user, queries, api }: any) {
                               type="button"
                               key={idx}
                               onClick={() => setSelectedDayIndex(idx)}
-                              className={`flex-1 basis-0 min-w-[110px] px-4 py-2 text-sm rounded-lg transition-colors border text-center ${idx === selectedDayIndex
-                                ? "bg-orange-600 text-white border-orange-600 shadow-sm"
-                                : "bg-white text-neutral-700 border-neutral-200 hover:bg-neutral-100"
-                                }`}
+                              className={`flex-1 basis-0 min-w-[110px] px-4 py-2 text-sm rounded-lg transition-colors border text-center ${
+                                idx === selectedDayIndex
+                                  ? "bg-orange-600 text-white border-orange-600 shadow-sm"
+                                  : "bg-white text-neutral-700 border-neutral-200 hover:bg-neutral-100"
+                              }`}
                             >
                               Day {d.day ?? idx + 1}
                             </button>
@@ -726,8 +988,8 @@ export default function GenerateItinerary({ user, queries, api }: any) {
                   >
                     <h2 className="text-xl font-[700]">Places</h2>
                     {selectedDay &&
-                      Array.isArray(selectedDay.activities) &&
-                      selectedDay.activities.length > 0 ? (
+                    Array.isArray(selectedDay.activities) &&
+                    selectedDay.activities.length > 0 ? (
                       <motion.div
                         key={`day-${selectedDayIndex}`}
                         className="grid grid-cols-3 gap-4 max-[700px]:grid-cols-2 max-[500px]:grid-cols-1"
@@ -760,48 +1022,66 @@ export default function GenerateItinerary({ user, queries, api }: any) {
                                   )}
                                 </div>
                                 <div className="p-4 flex flex-col h-full justify-between">
-                                 <div className="flex-col gap-2 flex">
-                                 <div className="flex items-start justify-between gap-2">
-                                    <div>
-                                      <p className="font-semibold leading-tight">
-                                        {activity.displayName?.text ??
-                                          "Untitled"}
-                                      </p>
-                                      {typeof activity.rating === "number" && (
-                                        <div className="text-sm text-orange-600">
-                                          ★ {activity.rating.toFixed(1)}
-                                        </div>
-                                      )}
+                                  <div className="flex-col gap-2 flex">
+                                    <div className="flex items-start justify-between gap-2">
+                                      <div>
+                                        <p className="font-semibold leading-tight">
+                                          {activity.displayName?.text ??
+                                            "Untitled"}
+                                        </p>
+                                        {typeof activity.rating ===
+                                          "number" && (
+                                          <div className="text-sm text-orange-600">
+                                            ★ {activity.rating.toFixed(1)}
+                                          </div>
+                                        )}
+                                      </div>
                                     </div>
+                                    {activity.formattedAddress && (
+                                      <p className="text-sm text-neutral-600">
+                                        {activity.formattedAddress}
+                                      </p>
+                                    )}
+                                    {activity.description && (
+                                      <p className="text-sm text-neutral-700 mt-1 line-clamp-3">
+                                        {activity.description}
+                                      </p>
+                                    )}
+                                    {activity.userAction && (
+                                      <p className="text-xs text-neutral-600 mt-1">
+                                        Suggested: {activity.userAction}
+                                      </p>
+                                    )}
                                   </div>
-                                  {activity.formattedAddress && (
-                                    <p className="text-sm text-neutral-600">
-                                      {activity.formattedAddress}
-                                    </p>
-                                  )}
-                                  {activity.description && (
-                                    <p className="text-sm text-neutral-700 mt-1 line-clamp-3">
-                                      {activity.description}
-                                    </p>
-                                  )}
-                                  {activity.userAction && (
-                                    <p className="text-xs text-neutral-600 mt-1">
-                                      Suggested: {activity.userAction}
-                                    </p>
-                                  )}
-                                 </div>
                                   <div className="mt-4 pt-3 border-t border-gray-100">
-                                    <a 
+                                    <a
                                       href={`https://www.google.com/maps/place/?q=place_id:${activity.id}`}
                                       target="_blank"
                                       rel="noopener noreferrer"
                                       className="inline-flex items-center justify-center w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-medium py-2.5 px-4 rounded-lg hover:bg-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-1"
                                     >
-                                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                      <svg
+                                        className="w-4 h-4 mr-2"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                      >
+                                        <path
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          strokeWidth={2}
+                                          d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                                        />
+                                        <path
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          strokeWidth={2}
+                                          d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                                        />
                                       </svg>
-                                      <span className="text-sm">View on Google Maps</span>
+                                      <span className="text-sm">
+                                        View on Google Maps
+                                      </span>
                                     </a>
                                   </div>
                                 </div>
@@ -871,16 +1151,34 @@ export default function GenerateItinerary({ user, queries, api }: any) {
                                   <span className="text-sm font-medium">
                                     From ${hotel.estimatedPrice}/night
                                   </span>
-                                  <a
-                                    href={`https://www.booking.com/searchresults.html?ss=${encodeURIComponent(
-                                      hotel.displayName
-                                    )}${parameters.when ? `&checkin=${parameters.when.split(" - ")[0]}&checkout=${parameters.when.split(" - ")[1]}` : ""}`}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="text-sm px-3 py-1.5 rounded-md bg-orange-600 text-white hover:bg-orange-700"
-                                  >
-                                    Book
-                                  </a>
+                                  <div className="flex gap-2">
+                                    <a
+                                      href={`https://www.google.com/maps/place/?q=place_id:${hotel.id}`}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      className="text-sm px-3 py-1.5 text-black"
+                                    >
+                                      View
+                                    </a>
+                                    <a
+                                      href={`https://www.booking.com/searchresults.html?ss=${encodeURIComponent(
+                                        hotel.displayName
+                                      )}${
+                                        parameters.when
+                                          ? `&checkin=${
+                                              parameters.when.split(" - ")[0]
+                                            }&checkout=${
+                                              parameters.when.split(" - ")[1]
+                                            }`
+                                          : ""
+                                      }`}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      className="text-sm px-3 py-1.5 rounded-md bg-orange-600 text-white hover:bg-orange-700"
+                                    >
+                                      Book
+                                    </a>
+                                  </div>
                                 </div>
                               </div>
                             </motion.div>
@@ -897,7 +1195,6 @@ export default function GenerateItinerary({ user, queries, api }: any) {
                   >
                     <AviasalesCard />
                   </motion.div>
-
                 </motion.div>
               )}
             </div>
