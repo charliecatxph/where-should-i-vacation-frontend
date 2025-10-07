@@ -137,7 +137,7 @@ const ItineraryLoadingSkeleton = ({
   }, [isLoading]);
 
   useEffect(() => {
-    if (isSuccess && progress > 0) {
+    if (isSuccess) {
       setProgress(100);
       setCurrentStep(steps.length - 1);
       const timer = setTimeout(() => {
@@ -146,7 +146,7 @@ const ItineraryLoadingSkeleton = ({
 
       return () => clearTimeout(timer);
     }
-  }, [isSuccess, progress]);
+  }, [isSuccess]);
 
   return (
     <motion.div
@@ -431,6 +431,8 @@ export default function GenerateItinerary({ user, queries, api }: any) {
     enabled: Boolean(queries.uuid),
   });
 
+  console.log(isLoading, isSuccess, isError)
+
   useEffect(() => {
     if (!error) return;
     const wtaError = handleAxiosError(error as AxiosError);
@@ -643,6 +645,7 @@ export default function GenerateItinerary({ user, queries, api }: any) {
     const hue = 120 - 120 * (value / 5); // 120 (green) to 0 (red)
     return `hsl(${hue}, 80%, 45%)`;
   }
+  
 
   const [showResults, setShowResults] = useState(false);
 
@@ -691,7 +694,7 @@ export default function GenerateItinerary({ user, queries, api }: any) {
                     onCameraChanged={handleCamChange}
                   >
                     {selectedDay?.activities.map((activity: any, i: number) => {
-                      {console.log(activity)}
+                 
                       return (
                         <AdvancedMarker
                           key={activity.displayName?.text || i}

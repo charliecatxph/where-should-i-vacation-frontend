@@ -70,6 +70,7 @@ export const authGate = async (ctx: GetServerSidePropsContext) => {
         },
       };
     }
+    
 
     return {
       props: {
