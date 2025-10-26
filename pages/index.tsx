@@ -1370,7 +1370,14 @@ export default function Home({ user, api, queries }: any) {
                 when you need it. Simple, transparent, and commitment-free.
               </p>
               <div className="pricing-structure grid grid-cols-3 gap-2 mt-10 max-[900px]:grid-cols-1">
-                <div className="price-card bg-white  border-1 border-neutral-100 shadow-sm shadow-neutral-100 px-10 py-8 rounded-md">
+                <div
+                  onClick={() => {
+                    !userData__final && router.push("/login");
+                  }}
+                  className={`price-card bg-white  border-1 border-neutral-100 shadow-sm shadow-neutral-100 px-10 py-8 rounded-md ${
+                    !userData__final && "cursor-pointer"
+                  }`}
+                >
                   <div className="tag bg-neutral-50 w-max px-5 py-1 rounded-full font-[600] border-1 border-neutral-200 text-xs">
                     <span>Traveler</span>
                   </div>
@@ -1412,7 +1419,14 @@ export default function Home({ user, api, queries }: any) {
                     </li>
                   </ul>
                 </div>
-                <div className="flex gap-2 max-[900px]:flex-col-reverse">
+                <div
+                  onClick={() => {
+                    !userData__final && router.push("/login");
+                  }}
+                  className={`flex gap-2 max-[900px]:flex-col-reverse ${
+                    !userData__final && "cursor-pointer"
+                  }`}
+                >
                   <div className="price-card bg-white  border-1 text-white border-neutral-100 shadow-sm shadow-neutral-100 px-10 py-8 rounded-md bg-gradient-to-b from-orange-600 to-blue-500 scale-110 z-10 max-[900px]:scale-100">
                     <div className="tag bg-orange-50 text-orange-600 w-max px-5 py-1 rounded-full font-[600] border-1 border-orange-200 text-xs">
                       <span>Journeyman</span>
@@ -1464,7 +1478,14 @@ export default function Home({ user, api, queries }: any) {
                     )}
                   </div>
                 </div>
-                <div className="price-card bg-white  border-1 border-neutral-100 shadow-sm shadow-neutral-100 px-10 py-8 rounded-md">
+                <div
+                  onClick={() => {
+                    !userData__final && router.push("/login");
+                  }}
+                  className={`price-card bg-white  border-1 border-neutral-100 shadow-sm shadow-neutral-100 px-10 py-8 rounded-md ${
+                    !userData__final && "cursor-pointer"
+                  }`}
+                >
                   <div className="tag bg-blue-50 text-blue-600 w-max px-5 py-1 rounded-full font-[600] border-1 border-blue-200 text-xs">
                     <span>Explorer</span>
                   </div>
