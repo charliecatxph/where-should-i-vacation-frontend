@@ -10,7 +10,13 @@ import {
 } from "lucide-react";
 import { Cookie, Geist, Inter, Raleway } from "next/font/google";
 import { motion, AnimatePresence } from "framer-motion";
-import React, { ChangeEvent, FormEvent, useEffect, useState } from "react";
+import React, {
+  ChangeEvent,
+  FormEvent,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { DatePicker } from "@mantine/dates";
 import { GetServerSidePropsContext } from "next";
 const inter = Inter({ subsets: ["latin"] });
@@ -28,7 +34,7 @@ import moment from "moment";
 import { v4 as uuidv4 } from "uuid";
 import { useRouter } from "next/router";
 import axios from "axios";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { useClickOutside } from "@/hooks/UseClickOutside";
 import { Header } from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -53,6 +59,7 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
 };
 
 export default function Home({ user, api, queries }: any) {
+  const queryClient = useQueryClient();
   const router = useRouter();
   const dispatch = useDispatch();
   const userData = useSelector(selectUserData);
@@ -64,6 +71,7 @@ export default function Home({ user, api, queries }: any) {
     dispatch(setUser(user));
   }, [user]);
 
+  // --- DATE PICKER ---
   const [showDatePicker, setShowDatePicker] = useState({
     active: false,
     start: null,
@@ -74,6 +82,7 @@ export default function Home({ user, api, queries }: any) {
     setShowDatePicker((pv) => ({ ...pv, active: false }))
   );
 
+  // --- FORM DATA FOR SMART SEARCH / ITINERARY ---
   const [form, setForm] = useState<FormState>({
     activity: "",
     location: "",
@@ -81,19 +90,27 @@ export default function Home({ user, api, queries }: any) {
     errors: {},
   });
 
-  // Tab state for switching between Smart Search and Itinerary Builder
+  // --- ACTIVE TAB SWITCHER ---
   const [activeTab, setActiveTab] = useState<
     "smart-search" | "itinerary-builder"
   >("smart-search");
 
-  // Preferences popup state (for itinerary builder)
+  // --- ACTIVE TAB AUTO SET THRU QUERY STRING ?md=? ---
+  useEffect(() => {
+    if (!queries?.md) return;
+    if (queries.md === "ib") {
+      setActiveTab("itinerary-builder");
+    } else {
+      setActiveTab("smart-search");
+    }
+  }, [queries?.md]);
+
+  // --- PREFERENCES PARAMETERS FOR ITINERARY ---
   const [showPreferencesPopup, setShowPreferencesPopup] = useState(false);
   const [pendingParams, setPendingParams] = useState<URLSearchParams | null>(
     null
   );
   const [selectedPreferences, setSelectedPreferences] = useState<string[]>([]);
-
-  // Grouped preferences (from itinerary builder)
   const preferenceGroups = [
     {
       label: "Experience",
@@ -128,6 +145,31 @@ export default function Home({ user, api, queries }: any) {
     },
   ];
 
+  const handlePreferenceToggle = (pref: string) => {
+    setSelectedPreferences((prev) =>
+      prev.includes(pref) ? prev.filter((p) => p !== pref) : [...prev, pref]
+    );
+  };
+
+  const handlePreferencesConfirm = () => {
+    if (pendingParams) {
+      if (selectedPreferences.length > 0) {
+        pendingParams.set("preferences", selectedPreferences.join(","));
+      }
+      router.push(`/generate-itinerary?${pendingParams.toString()}`);
+      setPendingParams(null);
+      setSelectedPreferences([]);
+      setShowPreferencesPopup(false);
+    }
+  };
+
+  const handlePreferencesCancel = () => {
+    setShowPreferencesPopup(false);
+    setSelectedPreferences([]);
+    setPendingParams(null);
+  };
+
+  // --- GLOBALIZED LOCATION SEARCH BAR HANDLER ---
   const [locationInputFocused, setLocationInputFocused] = useState(false);
   const [debouncedLocation, setDebouncedLocation] = useState(form.location);
   useEffect(() => {
@@ -146,8 +188,45 @@ export default function Home({ user, api, queries }: any) {
     loading: false,
     error: null,
   });
-  const queryClient = useQueryClient();
 
+  useEffect(() => {
+    const crt = new AbortController();
+    const fetchLocations = async () => {
+      if (!debouncedLocation.trim()) {
+        setLocationData({ results: [], loading: false, error: null });
+        return;
+      }
+      setLocationData((prev) => ({ ...prev, loading: true, error: null }));
+      try {
+        const data = await queryClient.fetchQuery({
+          queryKey: ["location-search", debouncedLocation],
+          queryFn: async () => {
+            if (!debouncedLocation.trim()) return [];
+            const res = await axios.get(`${api}/get-locations`, {
+              params: { query: debouncedLocation },
+              signal: crt.signal,
+              // headers: {
+              //   Authorization: `Bearer ${userData.token}`,
+              // },
+            });
+            return res.data.suggestions;
+          },
+          staleTime: 60 * 60 * 1000,
+        });
+
+        setLocationData({ results: data, loading: false, error: null });
+      } catch (err) {
+        setLocationData({ results: [], loading: false, error: err });
+      }
+    };
+    fetchLocations();
+
+    return () => {
+      crt.abort();
+    };
+  }, [debouncedLocation]);
+
+  // --- STRIPE PURCHASING HANDLER ---
   const handlePurchase = async (plan: "Journeyman" | "Explorer") => {
     try {
       const url = await queryClient.fetchQuery({
@@ -168,60 +247,8 @@ export default function Home({ user, api, queries }: any) {
         },
       });
       window.location = url;
-    } catch (e) { }
+    } catch (e) {}
   };
-
-  const getQueryLocations = async (
-    debouncedLocation: string,
-    token: string
-  ) => {
-    if (!debouncedLocation.trim()) return [];
-    const res = await axios.get(`${api}/get-locations`, {
-      params: { query: debouncedLocation },
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    return res.data.suggestions;
-  };
-
-  useEffect(() => {
-    if (!queries?.md) return;
-    if (queries.md === "ib") {
-      setActiveTab("itinerary-builder");
-    } else {
-      setActiveTab("smart-search");
-    }
-  }, [queries?.md])
-
-  useEffect(() => {
-    let isMounted = true;
-    const fetchLocations = async () => {
-      if (!debouncedLocation.trim()) {
-        if (isMounted)
-          setLocationData({ results: [], loading: false, error: null });
-        return;
-      }
-      if (isMounted)
-        setLocationData((prev) => ({ ...prev, loading: true, error: null }));
-      try {
-        const data = await queryClient.fetchQuery({
-          queryKey: ["location-search", debouncedLocation],
-          queryFn: () => getQueryLocations(debouncedLocation, userData.token),
-          staleTime: 60 * 60 * 1000,
-        });
-        if (isMounted)
-          setLocationData({ results: data, loading: false, error: null });
-      } catch (err) {
-        if (isMounted)
-          setLocationData({ results: [], loading: false, error: err });
-      }
-    };
-    fetchLocations();
-    return () => {
-      isMounted = false;
-    };
-  }, [debouncedLocation, userData.token, queryClient]);
 
   const handleActivityChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -276,7 +303,7 @@ export default function Home({ user, api, queries }: any) {
     setForm((prev) => ({ ...prev, errors: newErrors }));
     if (Object.keys(newErrors).length > 0) return;
     const uuid = uuidv4();
-    console.log(dateRange[0], dateRange[1])
+    console.log(dateRange[0], dateRange[1]);
     const params = new URLSearchParams({
       what: activity,
       where: location,
@@ -294,35 +321,12 @@ export default function Home({ user, api, queries }: any) {
     }
   };
 
-  const handlePreferenceToggle = (pref: string) => {
-    setSelectedPreferences((prev) =>
-      prev.includes(pref) ? prev.filter((p) => p !== pref) : [...prev, pref]
-    );
-  };
-
-  const handlePreferencesConfirm = () => {
-    if (pendingParams) {
-      if (selectedPreferences.length > 0) {
-        pendingParams.set("preferences", selectedPreferences.join(","));
-      }
-      router.push(`/generate-itinerary?${pendingParams.toString()}`);
-      setPendingParams(null);
-      setSelectedPreferences([]);
-      setShowPreferencesPopup(false);
-    }
-  };
-
-  const handlePreferencesCancel = () => {
-    setShowPreferencesPopup(false);
-    setSelectedPreferences([]);
-    setPendingParams(null);
-  };
-
   const navButtons = [
     { name: "Generation", route: "/#generation" },
     { name: "Pricing", route: "/#pricing" },
     { name: "FAQ", route: "/#faq" },
   ];
+  const [headPos, setHeadPos] = useState<DOMRect | null>();
 
   return (
     <>
@@ -365,9 +369,10 @@ export default function Home({ user, api, queries }: any) {
                             key={opt}
                             type="button"
                             className={`px-4 py-2 rounded-full border transition-all duration-200 text-sm font-medium shadow-sm focus:outline-none max-[500px]:px-3 max-[500px]:py-1.5 max-[500px]:text-xs
-                              ${selectedPreferences.includes(opt)
-                                ? "bg-orange-500 text-white border-orange-500 scale-105"
-                                : "bg-gray-100 text-gray-700 border-gray-200 hover:bg-orange-100 hover:border-orange-300"
+                              ${
+                                selectedPreferences.includes(opt)
+                                  ? "bg-orange-500 text-white border-orange-500 scale-105"
+                                  : "bg-gray-100 text-gray-700 border-gray-200 hover:bg-orange-100 hover:border-orange-300"
                               }
                             `}
                             onClick={() => handlePreferenceToggle(opt)}
@@ -410,8 +415,15 @@ export default function Home({ user, api, queries }: any) {
           userData__final={userData__final}
           navButtons={navButtons}
           api={api}
+          setRectPosition={setHeadPos}
         />
-        <section className="relative min-h-screen mt-5 max-[500px]:mt-0">
+        <section
+          className="relative mt-5 max-[500px]:mt-0"
+          style={{
+            minHeight: `calc(100vh - ${headPos?.height || 0}px - 40px)`,
+          }}
+          id="generation"
+        >
           <div className="bg h-full w-full px-5 absolute z-[-1] max-[500px]:px-0">
             <div className="rounded-2xl overflow-hidden h-full relative z-[-1] max-[500px]:rounded-[0px]">
               <video
@@ -449,10 +461,11 @@ export default function Home({ user, api, queries }: any) {
                   <ul className="flex items-center w-max max-[700px]:w-full text-black rounded-t-2xl overflow-hidden">
                     <li className="max-[700px]:flex-1">
                       <button
-                        className={`w-full px-5 py-3 transition-all ${activeTab === "smart-search"
-                          ? "bg-white text-black"
-                          : "bg-white/40 text-white hover:bg-white/60"
-                          }`}
+                        className={`w-full px-5 py-3 transition-all ${
+                          activeTab === "smart-search"
+                            ? "bg-white text-black"
+                            : "bg-white/40 text-white hover:bg-white/60"
+                        }`}
                         onClick={() => setActiveTab("smart-search")}
                       >
                         <span className="font-[600] flex items-center gap-3 max-[700px]:text-[0.8rem]">
@@ -477,10 +490,11 @@ export default function Home({ user, api, queries }: any) {
                     </li>
                     <li className="max-[700px]:flex-1">
                       <button
-                        className={`w-full px-5 py-3 transition-all ${activeTab === "itinerary-builder"
-                          ? "bg-white text-black"
-                          : "bg-white/40 text-white hover:bg-white/60"
-                          }`}
+                        className={`w-full px-5 py-3 transition-all ${
+                          activeTab === "itinerary-builder"
+                            ? "bg-white text-black"
+                            : "bg-white/40 text-white hover:bg-white/60"
+                        }`}
                         onClick={() => setActiveTab("itinerary-builder")}
                       >
                         <span className="font-[600] flex items-center gap-3 max-[700px]:text-[0.8rem]">
@@ -500,7 +514,11 @@ export default function Home({ user, api, queries }: any) {
                           <span className="max-[400px]:hidden">
                             Itinerary Builder
                           </span>
-                          {activeTab === "itinerary-builder" && <span className="bg-yellow-600 px-5 rounded-full text-xs text-yellow-50 py-1">BETA</span>}
+                          {activeTab === "itinerary-builder" && (
+                            <span className="bg-yellow-600 px-5 rounded-full text-xs text-yellow-50 py-1">
+                              BETA
+                            </span>
+                          )}
                         </span>
                       </button>
                     </li>
@@ -644,14 +662,13 @@ export default function Home({ user, api, queries }: any) {
                                 }
                               >
                                 <span
-                                  className={`ctx-unselected   ${!(form.dateRange[0] && form.dateRange[1]) &&
+                                  className={`ctx-unselected   ${
+                                    !(form.dateRange[0] && form.dateRange[1]) &&
                                     "text-neutral-500"
-                                    }`}
+                                  }`}
                                 >
                                   {form.dateRange[0]
-                                    ? moment(
-                                      form.dateRange[0]
-                                    ).format("MMM D")
+                                    ? moment(form.dateRange[0]).format("MMM D")
                                     : "--"}{" "}
                                 </span>
                               </div>
@@ -703,14 +720,13 @@ export default function Home({ user, api, queries }: any) {
                                 }
                               >
                                 <span
-                                  className={`ctx-unselected   ${!(form.dateRange[0] && form.dateRange[1]) &&
+                                  className={`ctx-unselected   ${
+                                    !(form.dateRange[0] && form.dateRange[1]) &&
                                     "text-neutral-500"
-                                    }`}
+                                  }`}
                                 >
                                   {form.dateRange[1]
-                                    ? moment(
-                                      form.dateRange[1]
-                                    ).format("MMM D")
+                                    ? moment(form.dateRange[1]).format("MMM D")
                                     : "--"}{" "}
                                 </span>
                               </div>
@@ -799,8 +815,8 @@ export default function Home({ user, api, queries }: any) {
                                 <div className="flex items-center gap-2">
                                   <Info className="w-3 h-3" />
                                   <span>
-                                    Leave empty and we'll find a location
-                                    for you
+                                    Leave empty and we'll find a location for
+                                    you
                                   </span>
                                 </div>
                                 <div className="absolute top-full left-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
@@ -897,14 +913,13 @@ export default function Home({ user, api, queries }: any) {
                                 }
                               >
                                 <span
-                                  className={`ctx-unselected   ${!(form.dateRange[0] && form.dateRange[1]) &&
+                                  className={`ctx-unselected   ${
+                                    !(form.dateRange[0] && form.dateRange[1]) &&
                                     "text-neutral-500"
-                                    }`}
+                                  }`}
                                 >
                                   {form.dateRange[0]
-                                    ? moment(
-                                      form.dateRange[0]
-                                    ).format("MMM D")
+                                    ? moment(form.dateRange[0]).format("MMM D")
                                     : "--"}{" "}
                                 </span>
                               </div>
@@ -957,15 +972,13 @@ export default function Home({ user, api, queries }: any) {
                                 }
                               >
                                 <span
-                                  className={`ctx-unselected   ${!(form.dateRange[0] && form.dateRange[1]) &&
+                                  className={`ctx-unselected   ${
+                                    !(form.dateRange[0] && form.dateRange[1]) &&
                                     "text-neutral-500"
-                                    }`}
+                                  }`}
                                 >
-
                                   {form.dateRange[1]
-                                    ? moment(
-                                      form.dateRange[1]
-                                    ).format("MMM D")
+                                    ? moment(form.dateRange[1]).format("MMM D")
                                     : "--"}
                                 </span>
                               </div>
@@ -1380,9 +1393,9 @@ export default function Home({ user, api, queries }: any) {
                         <Check className="w-4 h-4" strokeWidth={2} />
                       </span>
                       <span>
-                        10 AI-Powered Generations{" "}
+                        15 AI-Powered Generations{" "}
                         <span className="text-xs text-neutral-500">
-                          (refreshes to 10 per day if used)
+                          (refreshes to 15 per day if used)
                         </span>
                       </span>
                     </li>
@@ -1391,9 +1404,9 @@ export default function Home({ user, api, queries }: any) {
                         <Check className="w-4 h-4" strokeWidth={2} />
                       </span>
                       <span>
-                        1 Itinerary{" "}
+                        5 Itinerary{" "}
                         <span className="text-xs text-neutral-500">
-                          (refreshes to 1 per month if used)
+                          (refreshes to 5 per month if used)
                         </span>
                       </span>
                     </li>
@@ -1434,7 +1447,7 @@ export default function Home({ user, api, queries }: any) {
                           <Check className="w-4 h-4" strokeWidth={3} />
                         </span>
                         <span>
-                          12 Itineraries{" "}
+                          18 Itineraries{" "}
                           <span className="text-xs text-neutral-100">
                             (resets to Traveler if used)
                           </span>
@@ -1474,7 +1487,7 @@ export default function Home({ user, api, queries }: any) {
                         <Check className="w-4 h-4" strokeWidth={2} />
                       </span>
                       <span>
-                        20 AI-Powered Generations{" "}
+                        30 AI-Powered Generations{" "}
                         <span className="text-xs text-neutral-500">
                           (resets to Traveler if used)
                         </span>
@@ -1485,7 +1498,7 @@ export default function Home({ user, api, queries }: any) {
                         <Check className="w-4 h-4" strokeWidth={2} />
                       </span>
                       <span>
-                        5 Itineraries{" "}
+                        10 Itineraries{" "}
                         <span className="text-xs text-neutral-500">
                           (resets to Traveler if used)
                         </span>
@@ -1582,10 +1595,11 @@ function FAQAccordion() {
         {faqs.map((faq, idx) => (
           <li key={faq.q}>
             <button
-              className={`w-full flex justify-between items-center px-0 py-3 font-[600] text-left transition-colors ${openIndices.includes(idx)
-                ? "text-orange-600"
-                : "hover:text-orange-600 text-neutral-800"
-                }`}
+              className={`w-full flex justify-between items-center px-0 py-3 font-[600] text-left transition-colors ${
+                openIndices.includes(idx)
+                  ? "text-orange-600"
+                  : "hover:text-orange-600 text-neutral-800"
+              }`}
               onClick={() => handleToggle(idx)}
               aria-expanded={openIndices.includes(idx)}
               aria-controls={`faq-panel-${idx}`}
@@ -1594,10 +1608,11 @@ function FAQAccordion() {
             >
               <span className="text-lg max-[800px]:text-base">{faq.q}</span>
               <span
-                className={`ml-4 transition-transform duration-200 ${openIndices.includes(idx)
-                  ? "rotate-180 text-orange-600"
-                  : "rotate-0 text-neutral-400"
-                  }`}
+                className={`ml-4 transition-transform duration-200 ${
+                  openIndices.includes(idx)
+                    ? "rotate-180 text-orange-600"
+                    : "rotate-0 text-neutral-400"
+                }`}
                 style={{ display: "flex", alignItems: "center" }}
               >
                 <svg

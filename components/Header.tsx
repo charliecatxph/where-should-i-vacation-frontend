@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { FC, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, BoundingBox } from "framer-motion";
 import {
   ChevronDown,
   CircleQuestionMark,
@@ -27,12 +27,14 @@ interface HeaderProps {
   userData__final: any;
   navButtons: NavButton[];
   api: string;
+  setRectPosition?: (rect: DOMRect) => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({
+export const Header: FC<HeaderProps> = ({
   userData__final,
   navButtons,
   api,
+  setRectPosition,
 }) => {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -63,8 +65,31 @@ export const Header: React.FC<HeaderProps> = ({
     }
   };
 
+  const ref = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const updateRect = () => {
+      const rect = ref.current?.getBoundingClientRect();
+      if (rect && setRectPosition) {
+        setRectPosition(rect);
+      }
+    };
+
+    updateRect();
+    const resizeObserver = new ResizeObserver(updateRect);
+    if (ref.current) {
+      resizeObserver.observe(ref.current);
+    }
+
+    window.addEventListener('scroll', updateRect, true);
+
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener('scroll', updateRect, true);
+    };
+  }, [setRectPosition])
+
   return (
-    <header className="sticky top-0 z-[999]">
+    <header className="sticky top-0 z-[999]" ref={ref}>
       <div className="bg-orange-600 w-full strip px-5">
         <div className="ctx-container">
           <div className="wrapper flex justify-end py-[5px] relative ">
