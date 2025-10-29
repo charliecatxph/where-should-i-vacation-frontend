@@ -75,7 +75,8 @@ export interface TravelRecommendations {
 }
 
 export default function Generate({ user, queries, api }: any) {
-  const { showParameterError, showCreditError, showNtlCreditError } = useModal();
+  const { showParameterError, showCreditError, showNtlCreditError } =
+    useModal();
   const dispatch = useDispatch();
   const userData = useSelector(selectUserData);
 
@@ -153,7 +154,7 @@ export default function Generate({ user, queries, api }: any) {
     refetchOnMount: false,
     refetchOnWindowFocus: false,
     staleTime: 60 * 60 * 1000,
-    retry: 1,
+    retry: 5,
     enabled: Boolean(queries.uuid),
   });
 
@@ -308,7 +309,7 @@ export default function Generate({ user, queries, api }: any) {
     show: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.5 }
+      transition: { duration: 0.5 },
     },
   };
 
@@ -328,22 +329,24 @@ export default function Generate({ user, queries, api }: any) {
           <div className="ctx-container">
             <div className="wrapper mt-10 px-5">
               <h1 className="font-[600] text-2xl">
-                {(isPending || isError) ? (
+                {isPending || isError ? (
                   <span className="h-7 w-1/2 rounded loading-skeleton inline-block" />
                 ) : (
                   travelRecommendations?.title
                 )}
               </h1>
               <p className="mt-1 font-[300] text-lg">
-                {(isPending || isError) ? (
+                {isPending || isError ? (
                   <span className="h-5 w-2/3 rounded loading-skeleton inline-block" />
                 ) : (
                   travelRecommendations?.interpretation
                 )}
               </p>
-             
-              <div className={`grid max-[800px]:grid-cols-1  grid-cols-2 mt-5 gap-5 ${geist.className}`}>
-                {(isPending || isError) ? (
+
+              <div
+                className={`grid max-[800px]:grid-cols-1  grid-cols-2 mt-5 gap-5 ${geist.className}`}
+              >
+                {isPending || isError ? (
                   <>
                     <div className="col-span-2 max-[800px]:col-span-1">
                       <TripOverviewSkeleton />
@@ -371,9 +374,7 @@ export default function Generate({ user, queries, api }: any) {
                         <div className="flex gap-5 items-center">
                           <MapPin size={18} />
                           <div>
-                            <p className="text-neutral-600">
-                              Destination
-                            </p>
+                            <p className="text-neutral-600">Destination</p>
                             <p className="break-all">{parameters?.where}</p>
                           </div>
                         </div>
@@ -381,7 +382,15 @@ export default function Generate({ user, queries, api }: any) {
                           <Calendar size={18} />
                           <div>
                             <p className="text-neutral-600 text-sm">Dates</p>
-                            <p>{parameters?.when ? `${moment(parameters?.when.split(" - ")[0].trim()).format("MMM D")} - ${moment(parameters?.when.split(" - ")[1].trim()).format("MMM D")}` : ""}</p>
+                            <p>
+                              {parameters?.when
+                                ? `${moment(
+                                    parameters?.when.split(" - ")[0].trim()
+                                  ).format("MMM D")} - ${moment(
+                                    parameters?.when.split(" - ")[1].trim()
+                                  ).format("MMM D")}`
+                                : ""}
+                            </p>
                           </div>
                         </div>
                         <div className="flex gap-5 items-center w-max">
@@ -524,33 +533,35 @@ export default function Generate({ user, queries, api }: any) {
                   animate="show"
                 >
                   {!travelRecommendations ||
-                    travelRecommendations.places.length === 0
+                  travelRecommendations.places.length === 0
                     ? Array.from({ length: 5 }).map((_, i) => (
-                      <PlaceCardSkeleton key={i} />
-                    ))
+                        <PlaceCardSkeleton key={i} />
+                      ))
                     : travelRecommendations.places.map(
-                      (place: RecommendedPlace, i: number) => {
-                        console.log(travelRecommendations)
-                        return (
-                          <motion.div key={i} variants={cardVariants}>
-                            <PlaceCard
-                              images={place.photos.map((photo: any) => ({
-                                url: photo.secure_url,
-                                author:
-                                  photo.authorAttributions[0].displayName,
-                              }))}
-                              dates={parameters?.when}
-                              id={place.id}
-                              name={place.displayName.text}
-                              location={place.formattedAddress}
-                              mapsUrl={`https://www.google.com/maps/place/?q=place_id:${place.id}`}
-                              placeUrl="https://www.example.com/alps-lodge"
-                              tmpReferrer={travelRecommendations?.tmpReferrer || null}
-                            />
-                          </motion.div>
-                        );
-                      }
-                    )}
+                        (place: RecommendedPlace, i: number) => {
+                          console.log(travelRecommendations);
+                          return (
+                            <motion.div key={i} variants={cardVariants}>
+                              <PlaceCard
+                                images={place.photos.map((photo: any) => ({
+                                  url: photo.secure_url,
+                                  author:
+                                    photo.authorAttributions[0].displayName,
+                                }))}
+                                dates={parameters?.when}
+                                id={place.id}
+                                name={place.displayName.text}
+                                location={place.formattedAddress}
+                                mapsUrl={`https://www.google.com/maps/place/?q=place_id:${place.id}`}
+                                placeUrl="https://www.example.com/alps-lodge"
+                                tmpReferrer={
+                                  travelRecommendations?.tmpReferrer || null
+                                }
+                              />
+                            </motion.div>
+                          );
+                        }
+                      )}
                 </motion.div>
               )}
             </div>

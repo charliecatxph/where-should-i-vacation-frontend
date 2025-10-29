@@ -392,7 +392,7 @@ export default function GenerateItinerary({ user, queries, api }: any) {
 
   const {
     data: itineraryData = null,
-    isLoading,
+    isPending,
     isError,
     isSuccess,
     error,
@@ -432,7 +432,7 @@ export default function GenerateItinerary({ user, queries, api }: any) {
     refetchOnMount: false,
     refetchOnWindowFocus: false,
     staleTime: 60 * 60 * 1000,
-    retry: 1,
+    retry: 5,
     enabled: Boolean(queries.uuid),
   });
 
@@ -616,7 +616,7 @@ export default function GenerateItinerary({ user, queries, api }: any) {
 
   const {
     data: hotelsData,
-    isLoading: hotelsInitializing,
+    isPending: hotelsPending,
     isSuccess: hotelsSuccess,
     isError: hotelsError,
   } = useQuery({
@@ -637,7 +637,7 @@ export default function GenerateItinerary({ user, queries, api }: any) {
     refetchOnMount: false,
     refetchOnWindowFocus: false,
     staleTime: 60 * 60 * 1000,
-    retry: 1,
+    retry: 5,
     enabled: Boolean(
       queries.uuid && centralPoint?.latitude && centralPoint.longitude
     ),
@@ -683,9 +683,9 @@ export default function GenerateItinerary({ user, queries, api }: any) {
         <section>
           <AnimatePresence>
             {!showResults && (
-              <div className="ctx-container">
+              <div className="ctx-container px-5">
                 <ItineraryLoadingSkeleton
-                  isLoading={isLoading}
+                  isLoading={isPending}
                   isSuccess={isSuccess}
                   setFlag={setShowResults}
                   rf={Boolean(queries?.rf)}
@@ -706,8 +706,11 @@ export default function GenerateItinerary({ user, queries, api }: any) {
               </div>
             )}
             {showResults && (
-              <div className="grid grid-cols-2">
-                <div className="maps relative" ref={mapContainerRef}>
+              <div className="grid grid-cols-2 max-[1100px]:grid-cols-1">
+                <div
+                  className="maps relative h-screen max-[1100px]:max-h-[40vh] overflow-hidden sticky max-[1100px]:static top-0"
+                  ref={mapContainerRef}
+                >
                   {camProps && (
                     <APIProvider
                       apiKey={"AIzaSyD1X2K5JemighniA_ZhJoa_igthTlKJcmI"}
@@ -715,8 +718,7 @@ export default function GenerateItinerary({ user, queries, api }: any) {
                       <Map
                         style={{
                           width: "100%",
-                          height: "100vh",
-                          position: "sticky",
+                          height: "100%",
                           top: 0,
                         }}
                         {...camProps}
@@ -772,7 +774,7 @@ export default function GenerateItinerary({ user, queries, api }: any) {
                     </APIProvider>
                   )}
                   <AnimatePresence>
-                    {hotelsInitializing && (
+                    {hotelsPending && (
                       <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -874,7 +876,8 @@ export default function GenerateItinerary({ user, queries, api }: any) {
                       </div>
                     </div>
                   </motion.div>
-                  <div className="grid grid-cols-2 mt-5 gap-5 max-[800px]:grid-cols-1 break-all">
+
+                  <div className="grid grid-cols-2 max-[1200px]:grid-cols-1  mt-5 gap-5  break-all">
                     <motion.div
                       className="bg-neutral-100 px-7 py-5 rounded-lg shadow-sm shadow-neutral-100 border-1 border-neutral-300"
                       variants={itemReveal}
@@ -1127,7 +1130,7 @@ export default function GenerateItinerary({ user, queries, api }: any) {
                     <div className="flex items-center justify-between">
                       <h2 className="text-xl font-[700]">Hotels</h2>
                     </div>
-                    {hotelsInitializing && (
+                    {hotelsPending && (
                       <div className="mx-auto w-max flex items-center gap-5 h-[200px]">
                         <CircularProgress size={25} />
                         <p>Getting your hotels...</p>
@@ -1219,7 +1222,7 @@ export default function GenerateItinerary({ user, queries, api }: any) {
             initial="hidden"
             whileInView="show"
             viewport={{ once: true, margin: "-80px" }}
-            className="my-10"
+            className="my-10 px-5"
           >
             <AviasalesCard />
           </motion.div>

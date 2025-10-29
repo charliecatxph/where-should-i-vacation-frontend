@@ -94,7 +94,7 @@ export default function Vacation({ user, queries, api }: any) {
   const dispatch = useDispatch();
   const userData = useSelector(selectUserData);
   const router = useRouter();
-  const { ref: tmpReferrer} = router.query;
+  const { ref: tmpReferrer } = router.query;
 
   // ---- USER DATA REDUX CONDITIONAL ---
   const userData__final = isUserDataComplete(userData) ? userData : user;
@@ -105,7 +105,7 @@ export default function Vacation({ user, queries, api }: any) {
 
   const {
     data: placeData = [],
-    isLoading: placeLoading,
+    isPending: placePending,
     status: placeStatus,
     error: placeError,
   } = useQuery({
@@ -118,7 +118,7 @@ export default function Vacation({ user, queries, api }: any) {
       const res = await axios.get(`${api}/view-place?${params.toString()}`, {
         headers: {
           Authorization: `Bearer ${userData__final?.token || ""}`,
-          "X-Wta-Temporary-Referrer": tmpReferrer || null
+          "X-Wta-Temporary-Referrer": tmpReferrer || null,
         },
         withCredentials: true,
         timeout: 30000,
@@ -127,7 +127,7 @@ export default function Vacation({ user, queries, api }: any) {
       return res.data.place;
     },
     enabled: Boolean(queries.place),
-    retry: 1,
+    retry: 5,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
     refetchOnMount: false,
@@ -136,7 +136,7 @@ export default function Vacation({ user, queries, api }: any) {
   // Hotels query - executes only after place data is loaded and coordinates are available
   const {
     data: hotelsData,
-    isLoading: hotelsLoading,
+    isPending: hotelsPending,
     error: hotelsError,
   } = useQuery({
     queryKey: [
@@ -155,7 +155,7 @@ export default function Vacation({ user, queries, api }: any) {
         {
           headers: {
             Authorization: `Bearer ${userData?.token || ""}`,
-            "X-Wta-Temporary-Referrer": tmpReferrer || ""
+            "X-Wta-Temporary-Referrer": tmpReferrer || "",
           },
           withCredentials: true,
           timeout: 3 * 60 * 1000,
@@ -165,9 +165,7 @@ export default function Vacation({ user, queries, api }: any) {
       return res.data.hotels;
     },
     enabled: Boolean(
-      placeData?.location?.latitude &&
-      placeData?.location?.longitude 
-
+      placeData?.location?.latitude && placeData?.location?.longitude
     ),
     retry: 1,
     refetchOnWindowFocus: false,
@@ -190,19 +188,10 @@ export default function Vacation({ user, queries, api }: any) {
     if (!hotelsError) return;
 
     const wtaError = handleAxiosError(hotelsError as AxiosError);
-
-    // Handle specific errors for hotels
-    // if (
-    //   ["USER_NOT_EXIST", "SERVER_ERROR", "HOTELS_NOT_FOUND"].includes(wtaError)
-    // ) {
-    //   console.log("Redirecting due to hotels error:", wtaError);
-    //   // You can add router.push("/") here if needed
-    // }
+    router.push("/");
   }, [hotelsError]);
 
-  const navButtons = [
-    { name: "Generation", route: "/" },
-  ];
+  const navButtons = [{ name: "Generation", route: "/" }];
 
   return (
     <>
@@ -217,13 +206,13 @@ export default function Vacation({ user, queries, api }: any) {
           api={api}
         />
         <AnimatePresence>
-          {placeLoading ? (
+          {placePending ? (
             <PlaceLoadingSpinner />
           ) : (
             <>
               <PlaceShowcase placeData={placeData} />
               <HotelSwiper
-                hotelsLoading={hotelsLoading}
+                hotelsLoading={hotelsPending}
                 hotelsData={hotelsData}
                 placeData={placeData}
                 dates={queries?.dates ?? ""}
